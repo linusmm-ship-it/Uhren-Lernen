@@ -719,7 +719,10 @@ screens.home = root => {
         <span class="gtitle">${g.title}</span><span class="gsub">${g.sub}</span>
       </button>`).join('')}
     </section>
-  </main>`;
+  </main>
+  <div style="text-align:center; padding: 15px 0 5px; flex: none;">
+    <button id="resetStars" style="background:none;border:none;color:var(--muted);font-size:12px;opacity:.6;cursor:pointer;text-decoration:underline;padding:8px">Sterne zurücksetzen</button>
+  </div>`;
 
   bindMute(root);
   const th = $('.js-theme', root);
@@ -727,6 +730,23 @@ screens.home = root => {
   updTheme();
   th.onclick = () => { state.theme = effectiveTheme() === 'dark' ? 'light' : 'dark'; store.set('uhr:theme', state.theme); applyTheme(); updTheme(); };
   $$('[data-go]', root).forEach(b => b.onclick = () => go(b.dataset.go));
+
+  $('#resetStars', root).onclick = () => {
+    modal(`<h2>Neu anfangen?</h2><p>Möchtest du wirklich alle gesammelten Sterne und deinen Rang löschen?</p>
+      <div class="row">
+        <button class="btn" style="--c:var(--coral);--cd:var(--coral-d)" data-m="yes">Ja, löschen</button>
+        <button class="btn btn-ghost" data-m="no">Abbrechen</button>
+      </div>`,
+      {
+        yes: () => {
+          state.stars = 0;
+          store.set('uhr:stars', 0);
+          go('home');
+          toast('Alle Sterne wurden zurückgesetzt!');
+        }
+      }
+    );
+  };
 
   const svg = $('.hero-clock svg', root);
   let a = null, lastMin = -1, words = '';
