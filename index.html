@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>Uhr lesen lernen</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -52,7 +52,7 @@
 
 *{box-sizing:border-box}
 [hidden]{display:none !important}
-html,body{height:100%;margin:0}
+html,body{height:100%;margin:0;touch-action:manipulation}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{
   font-family:var(--font-b);color:var(--ink);
@@ -78,7 +78,7 @@ button{font:inherit}
 .screen::-webkit-scrollbar{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;position:relative;z-index:10}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;position:relative;z-index:20}
 .topbar-title{
   margin:0;flex:1;text-align:center;line-height:1.1;
   font-family:var(--font-h);font-weight:700;font-size:clamp(20px,4.2vw,34px);
@@ -94,10 +94,11 @@ button{font:inherit}
 .icon-btn{
   width:44px;height:44px;flex:none;border-radius:50%;border:0;background:var(--surface);color:var(--ink);
   font-size:20px;line-height:1;box-shadow:var(--card-shadow);cursor:pointer;display:grid;place-items:center;
-  transition:transform .1s;
+  transition:transform .1s, background .2s, color .2s;
 }
 .icon-btn:active{transform:scale(.9)}
 .icon-btn.sm{width:38px;height:38px;font-size:17px}
+.icon-btn.on{background:var(--purple);color:#fff}
 
 .btn{
   --c:var(--blue);--cd:var(--blue-d);
@@ -108,7 +109,7 @@ button{font:inherit}
   transition:transform .08s,box-shadow .08s,filter .2s;
 }
 .btn:hover{filter:brightness(1.07)}
-.btn:active{transform:translateY(5px);box-shadow:0 1px 0 var(--cd)}
+.btn:active:not(:disabled){transform:translateY(5px);box-shadow:0 1px 0 var(--cd)}
 .btn:disabled{opacity:.55;cursor:default;transform:none;filter:none}
 .btn-green{--c:var(--green);--cd:var(--green-d)}
 .btn-blue{--c:var(--blue);--cd:var(--blue-d)}
@@ -121,7 +122,7 @@ button{font:inherit}
 .hide-sm{display:inline}
 @media (max-width:480px){.hide-sm{display:none}}
 
-.levels{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;flex:none;position:relative;z-index:10}
+.levels{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;flex:none}
 .chip{
   border:0;cursor:pointer;color:var(--muted);background:var(--surface);border-radius:999px;
   font-family:var(--font-h);font-weight:600;font-size:clamp(13px,2vw,17px);
@@ -134,7 +135,7 @@ button{font:inherit}
 
 .clock-wrap{
   width:min(100%,var(--cs,300px),640px);aspect-ratio:1;border-radius:50%;
-  filter:drop-shadow(0 16px 22px rgba(20,30,80,.28));
+  filter:drop-shadow(0 16px 22px rgba(20,30,80,.28));position:relative;
 }
 .clock{width:100%;height:100%;display:block;overflow:visible;touch-action:none}
 .clk-bezel{fill:var(--bezel)}
@@ -167,7 +168,6 @@ button{font:inherit}
   --cs:max(230px,calc(var(--vh) - 470px));
   flex:1;min-height:0;display:grid;gap:14px;justify-items:center;align-content:center;
   grid-template-columns:minmax(0,1fr);grid-template-areas:"task" "stage" "actions";
-  position:relative;z-index:1;
 }
 .play.read{--cs:max(230px,calc(var(--vh) - 410px));grid-template-areas:"stage" "task" "actions"}
 @media (min-width:860px) and (min-aspect-ratio:5/4){
@@ -179,8 +179,11 @@ button{font:inherit}
   .play .task{align-self:end}
   .play .actions{align-self:start}
 }
-.stage{grid-area:stage;width:100%;display:grid;place-items:center;align-self:center}
-.stage.ok .clock-wrap{animation:okpulse .9s ease-out}
+.stage{grid-area:stage;width:100%;display:grid;place-items:center;align-self:center;position:relative}
+.stage.ok .clock-wrap::after{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  animation:okpulse .9s ease-out;pointer-events:none;
+}
 @keyframes okpulse{0%{box-shadow:0 0 0 0 rgba(24,169,87,.7)}100%{box-shadow:0 0 0 46px rgba(24,169,87,0)}}
 @keyframes pulse-timer {0%{transform:scale(1);box-shadow:0 0 0 0 rgba(59,130,246,0.3)}50%{transform:scale(1.02);box-shadow:0 0 0 15px rgba(59,130,246,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(59,130,246,0)}}
 .pulsing{animation:pulse-timer 1s infinite ease-in-out}
@@ -189,13 +192,13 @@ button{font:inherit}
 .task{grid-area:task;position:relative;text-align:center;width:min(100%,540px)}
 .task-tools{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2}
 .task-label{color:var(--muted);font-weight:800;font-size:clamp(14px,2.2vw,20px);padding:0 44px}
-.task-time{font-family:var(--font-h);font-weight:700;font-size:clamp(42px,9vw,84px);line-height:1.05;color:var(--blue);transition:filter 0.3s}
+.task-time{font-family:var(--font-h);font-weight:700;font-size:clamp(42px,9vw,84px);line-height:1.05;color:var(--blue)}
 .task-time small{font-size:.38em;color:var(--ink);margin-left:.2em}
 .task-words{
   display:inline-block;margin-top:.3em;background:var(--surface-2);border-radius:999px;
-  font-weight:800;font-size:clamp(16px,2.6vw,24px);padding:.25em .9em;transition:filter 0.3s;
+  font-weight:800;font-size:clamp(16px,2.6vw,24px);padding:.25em .9em;
 }
-.task-meta{margin-top:.6em;color:var(--muted);font-weight:800;font-size:clamp(13px,2vw,17px);transition:filter 0.3s;}
+.task-meta{margin-top:.6em;color:var(--muted);font-weight:800;font-size:clamp(13px,2vw,17px)}
 .task-meta b{color:var(--orange)}
 .actions{grid-area:actions;width:min(100%,540px);display:flex;flex-direction:column;align-items:center;gap:12px}
 .feedback{min-height:60px;width:100%;display:grid;place-items:center;text-align:center;font-family:var(--font-h);font-weight:600;font-size:clamp(16px,2.6vw,22px)}
@@ -205,18 +208,131 @@ button{font:inherit}
 @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes wobble{25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
 
-.answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.answers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;width:100%}
 .ans-btn{font-size:clamp(22px,5vw,40px);padding:.5em .2em}
 .ans-btn.wrong{--c:#c3c9e4;--cd:#8f98c4;color:#5b6490;animation:wobble .4s}
 .ans-btn.right{--c:var(--green);--cd:var(--green-d);animation:pop .4s}
+.ans-btn.text-sm{font-size:clamp(15px,3vw,24px);padding:.6em .3em}
 
-.prog{display:flex;align-items:center;justify-content:center;gap:12px;flex:none;font-weight:800;color:var(--muted);position:relative;z-index:10}
+.prog{display:flex;align-items:center;justify-content:center;gap:12px;flex:none;font-weight:800;color:var(--muted)}
 .bar{flex:0 1 260px;height:14px;border-radius:99px;background:var(--surface);box-shadow:inset 0 2px 4px rgba(0,0,0,.12);overflow:hidden}
 .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--yellow),var(--orange));transition:width .5s}
-.tgrid{
-  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,22px);
-  width:min(100%,calc((var(--vh) - 200px) * 1.9),1100px);margin:0 auto;position:relative;z-index:10;
+
+/* Home Grid */
+.home{
+  flex:1;display:grid;gap:clamp(14px,3vw,30px);align-content:center;width:100%;max-width:1180px;margin:0 auto;
+  grid-template-columns:minmax(0,1fr);
 }
+@media (min-width:900px) and (min-aspect-ratio:5/4){.home{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);align-items:center}}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.hero-clock{
+  --cs:clamp(150px,min(46vw,32vh),300px);
+  border:0;padding:0;background:none;cursor:pointer;
+}
+@supports (height:100dvh){.hero-clock{--cs:clamp(150px,min(46vw,32dvh),300px)}}
+@media (min-width:900px) and (min-aspect-ratio:5/4){.hero-clock{--cs:clamp(200px,min(34vw,62vh),440px)}}
+.hero-clock:active{transform:scale(.98)}
+.greet{margin:0;font-weight:800;color:var(--muted);font-size:clamp(16px,2.4vw,22px)}
+.title{margin:0;font-family:var(--font-h);font-weight:700;line-height:1;font-size:clamp(38px,7.5vw,84px);letter-spacing:-.01em}
+.lead{margin:0;font-weight:700;font-size:clamp(16px,2.4vw,22px);line-height:1.35;max-width:32ch}
+.lead b{font-family:var(--font-h);font-weight:600;color:var(--coral)}
+.rank{width:min(100%,360px);display:grid;gap:6px;justify-items:center;font-weight:800;color:var(--muted);font-size:clamp(13px,1.8vw,16px)}
+.rank .bar{width:100%;flex:none}
+
+.games{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,24px);
+}
+@media (min-width: 800px) and (min-aspect-ratio: 1/1) {
+  .games{grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+.gcard{
+  --c:var(--blue);--cd:var(--blue-d);
+  position:relative;overflow:hidden;text-align:left;border:0;cursor:pointer;color:#fff;
+  display:flex;flex-direction:column;gap:6px;justify-content:center;min-height:clamp(120px,18vh,180px);
+  border-radius:30px;padding:clamp(14px,2vw,22px);background:var(--c);
+  box-shadow:0 8px 0 var(--cd),0 18px 30px rgba(20,30,90,.18);
+  transition:transform .12s,box-shadow .12s;
+}
+.gcard::before{content:'';position:absolute;right:-34px;top:-34px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.17)}
+.gcard:hover{transform:translateY(-3px)}
+.gcard:active{transform:translateY(6px);box-shadow:0 2px 0 var(--cd)}
+.gicon{
+  font-size:clamp(22px,4vw,34px);line-height:1;margin-right:6px;vertical-align:middle;display:inline-block;
+}
+.gtitle{font-family:var(--font-h);font-weight:700;font-size:clamp(18px,2.6vw,26px);line-height:1.15;display:block;}
+.gsub{font-weight:800;opacity:.92;font-size:clamp(12px,1.6vw,15px);display:block;margin-top:2px}
+.gcard.blue{--c:var(--blue);--cd:var(--blue-d)}
+.gcard.green{--c:var(--green);--cd:var(--green-d)}
+.gcard.purple{--c:var(--purple);--cd:var(--purple-d)}
+.gcard.orange{--c:var(--orange);--cd:var(--orange-d)}
+.gcard.pink{--c:var(--pink);--cd:var(--pink-d)}
+.gcard.coral{--c:var(--coral);--cd:var(--coral-d)}
+.gcard.yellow{--c:#f0ac00;--cd:var(--yellow-d)}
+
+/* Modals & Toasts */
+.modal{
+  position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;
+  background:rgba(14,20,54,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:fadeIn .25s;
+}
+.modal-card{
+  background:var(--surface);color:var(--ink);border-radius:34px;padding:28px 32px;text-align:center;max-width:440px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pop .4s;
+}
+.modal-card .big{font-size:72px;line-height:1}
+.modal-card h2{margin:6px 0;font-family:var(--font-h);font-size:40px}
+.modal-card p{margin:0 0 18px;font-weight:800;color:var(--muted);font-size:20px}
+.modal-card .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:70;
+  transform:translate(-50%,30px);opacity:0;pointer-events:none;transition:.3s;
+  background:var(--ink);color:var(--bg-a);border-radius:999px;padding:.7em 1.4em;font-family:var(--font-h);font-weight:600;font-size:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92vw;text-align:center;
+}
+.toast.show{transform:translate(-50%,0);opacity:1}
+.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+
+/* Explorer & My Day Sky Effect */
+.sky{position:absolute;inset:0;z-index:0;pointer-events:none;transition:background 1.4s ease;border-radius:0}
+.sky::after{
+  content:'';position:absolute;inset:0;pointer-events:none;transition:opacity 1.4s ease;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%,#fff,transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 18%,#fff,transparent 60%),
+    radial-gradient(2px 2px at 42% 55%,#fff,transparent 60%),
+    radial-gradient(1.6px 1.6px at 85% 42%,#fff,transparent 60%),
+    radial-gradient(2px 2px at 12% 74%,#fff,transparent 60%),
+    radial-gradient(1.6px 1.6px at 60% 84%,#fff,transparent 60%),
+    radial-gradient(2px 2px at 32% 12%,#fff,transparent 60%);
+  opacity:0;
+}
+.sky.night { background: linear-gradient(to bottom, #090a0f, #1e2657); }
+.sky.dawn  { background: linear-gradient(to bottom, #4a6583, #f5a87b); }
+.sky.day   { background: linear-gradient(to bottom, #87CEEB, #e0f6ff); }
+.sky.dusk  { background: linear-gradient(to bottom, #1e2657, #ff7e5f); }
+.sky.night::after, .sky.dusk::after { opacity:0.8; }
+.screen.explore > *:not(.sky) { position:relative; z-index:1; }
+
+.secret-mode .task-words, .secret-mode .task-time, .secret-mode .task-meta { opacity: 0; pointer-events:none; }
+
+/* Team Duel Split Screen */
+.team-board {
+  flex:1; display:flex; flex-direction:row; align-items:center; justify-content:space-between;
+  width:100%; max-width:1200px; margin:0 auto; gap:20px;
+}
+.team-panel { flex:1; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; }
+.team-score { font-family:var(--font-h); font-size:clamp(40px,8vw,80px); font-weight:700; line-height:1; padding:10px 30px; border-radius:20px; color:#fff; box-shadow:var(--card-shadow); }
+.team-red .team-score { background:var(--coral); }
+.team-blue .team-score { background:var(--blue); }
+.team-panel .ans-btn { width:100%; max-width:280px; }
+.team-stage { flex:0 1 auto; display:grid; place-items:center; }
+.team-stage .clock-wrap { --cs: clamp(200px, 40vw, 420px); }
+.team-stage.pulse-red .clock-wrap::after { animation:okpulse-red .6s ease-out; }
+.team-stage.pulse-blue .clock-wrap::after { animation:okpulse-blue .6s ease-out; }
+@keyframes okpulse-red{0%{box-shadow:0 0 0 0 rgba(255,107,94,.7)}100%{box-shadow:0 0 0 50px rgba(255,107,94,0)}}
+@keyframes okpulse-blue{0%{box-shadow:0 0 0 0 rgba(59,130,246,.7)}100%{box-shadow:0 0 0 50px rgba(59,130,246,0)}}
+
+/* Memory & Cards */
+.tgrid{ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,22px); width:min(100%,calc((var(--vh) - 200px) * 1.9),1100px);margin:0 auto; }
 @media (max-aspect-ratio:1/1){.tgrid{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,calc((var(--vh) - 200px) * .72),560px)}}
 .tcard{position:relative;aspect-ratio:4/3;perspective:900px;cursor:pointer;container-type:inline-size}
 @media (max-aspect-ratio:1/1){.tcard{aspect-ratio:1/.92}}
@@ -246,10 +362,10 @@ button{font:inherit}
 .c-purple{--c:var(--purple);--cd:var(--purple-d);--tint:#e7defe}
 .foot{display:flex;justify-content:center;flex:none}
 
-.mstats{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;flex:none;position:relative;z-index:10}
+.mstats{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;flex:none}
 .mgrid{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,1.6vw,16px);
-  width:min(100%,calc((var(--vh) - 260px) * 1.28),900px);margin:0 auto;position:relative;z-index:10;
+  width:min(100%,calc((var(--vh) - 260px) * 1.28),900px);margin:0 auto;
 }
 @media (max-aspect-ratio:1/1){.mgrid{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,calc((var(--vh) - 260px) * .72),560px)}}
 .mcard{position:relative;aspect-ratio:1;perspective:800px;cursor:pointer}
@@ -268,92 +384,6 @@ button{font:inherit}
 .mcard.done .mfront{box-shadow:0 5px 0 var(--green),0 0 0 4px var(--green)}
 .mcard.done{animation:pop .5s .45s}
 .mdigital{font-family:var(--font-h);font-weight:700;color:var(--clock-ink);font-size:clamp(24px,6vw,52px)}
-
-.home{
-  flex:1;display:grid;gap:clamp(14px,3vw,30px);align-content:center;width:100%;max-width:1180px;margin:0 auto;
-  grid-template-columns:minmax(0,1fr);
-}
-@media (min-width:900px) and (min-aspect-ratio:5/4){.home{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:center}}
-.hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
-.hero-clock{
-  --cs:clamp(150px,min(46vw,32vh),300px);
-  border:0;padding:0;background:none;cursor:pointer;
-}
-@supports (height:100dvh){.hero-clock{--cs:clamp(150px,min(46vw,32dvh),300px)}}
-@media (min-width:900px) and (min-aspect-ratio:5/4){.hero-clock{--cs:clamp(200px,min(34vw,62vh),440px)}}
-.hero-clock:active{transform:scale(.98)}
-.greet{margin:0;font-weight:800;color:var(--muted);font-size:clamp(16px,2.4vw,22px)}
-.title{margin:0;font-family:var(--font-h);font-weight:700;line-height:1;font-size:clamp(38px,7.5vw,84px);letter-spacing:-.01em}
-.lead{margin:0;font-weight:700;font-size:clamp(16px,2.4vw,22px);line-height:1.35;max-width:32ch}
-.lead b{font-family:var(--font-h);font-weight:600;color:var(--coral)}
-.rank{width:min(100%,360px);display:grid;gap:6px;justify-items:center;font-weight:800;color:var(--muted);font-size:clamp(13px,1.8vw,16px)}
-.rank .bar{width:100%;flex:none}
-.games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,24px)}
-.gcard{
-  --c:var(--blue);--cd:var(--blue-d);
-  position:relative;overflow:hidden;text-align:left;border:0;cursor:pointer;color:#fff;
-  display:flex;flex-direction:column;gap:6px;justify-content:flex-end;min-height:clamp(140px,22vh,210px);
-  border-radius:30px;padding:clamp(14px,2.4vw,24px);background:var(--c);
-  box-shadow:0 8px 0 var(--cd),0 18px 30px rgba(20,30,90,.18);
-  transition:transform .12s,box-shadow .12s;
-}
-.gcard::before{content:'';position:absolute;right:-34px;top:-34px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.17)}
-.gcard:hover{transform:translateY(-3px)}
-.gcard:active{transform:translateY(6px);box-shadow:0 2px 0 var(--cd)}
-.gicon{
-  position:absolute;right:clamp(10px,2vw,20px);top:clamp(10px,2vw,18px);font-size:clamp(34px,6vw,58px);line-height:1;
-}
-.gtitle{font-family:var(--font-h);font-weight:700;font-size:clamp(18px,3vw,28px);line-height:1.1;max-width:9em}
-.gsub{font-weight:800;opacity:.92;font-size:clamp(12px,1.8vw,16px)}
-.gcard.blue{--c:var(--blue);--cd:var(--blue-d)}
-.gcard.green{--c:var(--green);--cd:var(--green-d)}
-.gcard.purple{--c:var(--purple);--cd:var(--purple-d)}
-.gcard.orange{--c:var(--orange);--cd:var(--orange-d)}
-.gcard.pink{--c:var(--pink);--cd:var(--pink-d)}
-.gcard.coral{--c:var(--coral);--cd:var(--coral-d)}
-.gcard.yellow{--c:#f0ac00;--cd:var(--yellow-d)}
-
-.modal{
-  position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;
-  background:rgba(14,20,54,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:fadeIn .25s;
-}
-.modal-card{
-  background:var(--surface);color:var(--ink);border-radius:34px;padding:28px 32px;text-align:center;max-width:440px;
-  box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pop .4s;
-}
-.modal-card .big{font-size:72px;line-height:1}
-.modal-card h2{margin:6px 0;font-family:var(--font-h);font-size:40px}
-.modal-card p{margin:0 0 18px;font-weight:800;color:var(--muted);font-size:20px}
-.modal-card .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.toast{
-  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:70;
-  transform:translate(-50%,30px);opacity:0;pointer-events:none;transition:.3s;
-  background:var(--ink);color:var(--bg-a);border-radius:999px;padding:.7em 1.4em;font-family:var(--font-h);font-weight:600;font-size:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:92vw;text-align:center;
-}
-.toast.show{transform:translate(-50%,0);opacity:1}
-.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
-
-/* Explorer Sky Effect */
-.sky{position:absolute;inset:0;z-index:0;pointer-events:none;transition:background 1.4s ease;border-radius:0}
-.sky::after{
-  content:'';position:absolute;inset:0;pointer-events:none;transition:opacity 1.4s ease;
-  background-image:
-    radial-gradient(2px 2px at 20% 30%,#fff,transparent 60%),
-    radial-gradient(1.5px 1.5px at 70% 18%,#fff,transparent 60%),
-    radial-gradient(2px 2px at 42% 55%,#fff,transparent 60%),
-    radial-gradient(1.6px 1.6px at 85% 42%,#fff,transparent 60%),
-    radial-gradient(2px 2px at 12% 74%,#fff,transparent 60%),
-    radial-gradient(1.6px 1.6px at 60% 84%,#fff,transparent 60%),
-    radial-gradient(2px 2px at 32% 12%,#fff,transparent 60%);
-  opacity:0;
-}
-.sky.night { background: linear-gradient(to bottom, #090a0f, #1e2657); }
-.sky.dawn  { background: linear-gradient(to bottom, #4a6583, #f5a87b); }
-.sky.day   { background: linear-gradient(to bottom, #87CEEB, #e0f6ff); }
-.sky.dusk  { background: linear-gradient(to bottom, #1e2657, #ff7e5f); }
-.sky.night::after, .sky.dusk::after { opacity:0.8; }
-.screen.explore > *:not(.sky) { position:relative; z-index:1; }
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -386,8 +416,10 @@ const state = {
   muted: store.get('uhr:muted', false),
   level: store.get('uhr:level', 2),
   theme: store.get('uhr:theme', null),
-  show24: store.get('uhr:show24', false)
+  show24: store.get('uhr:show24', false) // Innerer 24h Kreis
 };
+
+const is24 = () => true; // Fest auf 24h eingestellt!
 
 const effectiveTheme = () => state.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 const applyTheme = () => {
@@ -548,30 +580,32 @@ const LEVELS = [
 ];
 const lvl = () => LEVELS[state.level - 1];
 const stepOf = () => state.level === 5 ? 1 : 5;
+
 function randTime(l, avoid = []) {
   let t, n = 0;
   do { t = { h: rand(24), m: l.mins ? pick(l.mins) : rand(60) }; n++; }
   while (n < 40 && avoid.some(a => a && a.h === t.h && a.m === t.m));
   return t;
 }
-function makeOptions(t, l) {
-  const okm = m => !l.mins || l.mins.includes(m);
-  const norm = h => mod(h, 24);
-  const seen = new Set([t.h + ':' + t.m]), out = [];
-  const add = (h, m) => {
-    h = norm(h); m = mod(m, 60);
-    const k = h + ':' + m;
-    if (!okm(m) || seen.has(k)) return;
-    seen.add(k); out.push({ h, m });
-  };
-  add(t.h + 12, t.m);
-  if (t.m % 5 === 0) add(t.m / 5 || 12, (t.h % 12) * 5);
-  add(t.h + 1, t.m); add(t.h - 1, t.m);
-  const alt = l.mins ? shuffle(l.mins) : shuffle([1, -1, 5, -5, 10, -10, 15, 30].map(d => t.m + d));
-  alt.forEach(m => add(t.h, m));
+
+// Garantiert 'count' distinkte und visuell unterschiedliche falsche Antworten
+function getWrongOptions(t, l, count) {
+  const out = [];
   let guard = 0;
-  while (out.length < 4 && guard++ < 60) add(rand(24), l.mins ? pick(l.mins) : rand(60));
-  return [out[0], pick(out.slice(1, 4))];
+  while(out.length < count && guard < 200) {
+    guard++;
+    let c = randTime(l);
+    // Verhindere komplett identische Uhrzeit
+    if (c.h === t.h && c.m === t.m) continue;
+    // Verhindere visuell identische Uhrzeit (z.B. 04:00 und 16:00)
+    if (c.h % 12 === t.h % 12 && c.m === t.m) continue;
+    // Verhindere identische Uhrzeiten unter den falschen Antworten
+    if (out.some(o => o.h === c.h && o.m === c.m)) continue;
+    // Verhindere visuell identische Uhrzeiten unter den falschen Antworten
+    if (out.some(o => o.h % 12 === c.h % 12 && o.m === c.m)) continue;
+    out.push(c);
+  }
+  return out;
 }
 
 const C = 130;
@@ -581,7 +615,7 @@ const MIN_D  = 'M127 148 L126.6 132 L128.4 36 Q130 28 131.6 36 L133.4 132 L133 1
 const rotStyle = deg => `style="transform:rotate(${deg}deg)"`;
 
 function clockSVG(o = {}) {
-  const { mini = false, knobs = false, sec = false, hit = false, T = 0, label = 'Uhr' } = o;
+  const { mini = false, knobs = false, sec = false, hit = false, T = 0, label = 'Uhr', pie = null } = o;
   let ticks = '';
   for (let i = 0; i < 60; i++) {
     const hr = i % 5 === 0; if (mini && !hr) continue;
@@ -598,9 +632,22 @@ function clockSVG(o = {}) {
   let mnums = '';
   if (!mini) for (let i = 1; i <= 12; i++) { const [x, y] = pt(120, i * 30); mnums += `<text class="clk-mnum" x="${x}" y="${y}">${i * 5}</text>`; }
 
+  let pieSVG = '';
+  if (pie && pie.dur > 0) {
+    const s = pie.start * 6;
+    let dur = pie.dur * 6;
+    if(dur > 359.9) dur = 359.9;
+    const e = s + dur;
+    const [sx, sy] = pt(112, s);
+    const [ex, ey] = pt(112, e);
+    const largeArc = dur > 180 ? 1 : 0;
+    pieSVG = `<path d="M 130 130 L ${sx} ${sy} A 112 112 0 ${largeArc} 1 ${ex} ${ey} Z" fill="rgba(255,107,94,0.3)" />`;
+  }
+
   return `<svg class="clock${mini ? ' mini' : ''}${state.show24 ? ' show24' : ''}" viewBox="0 0 260 260" role="img" aria-label="${label}">
   <circle class="clk-bezel" cx="130" cy="130" r="128"/>
   <circle class="clk-face" cx="130" cy="130" r="112"/>
+  ${pieSVG}
   <g class="clk-mnums">${mnums}</g>
   <g>${ticks}</g>
   <g>${nums}</g>
@@ -623,8 +670,8 @@ function clockSVG(o = {}) {
   <circle class="clk-hub" cx="130" cy="130" r="9"/>
   <circle cx="130" cy="130" r="3.5" fill="#fff"/>
   ${hit ? `<g>
-    <line class="hit hand" data-hit="min"  data-rot="hit-min"  x1="130" y1="130" x2="130" y2="34" stroke-width="26" ${rotStyle(T * 6)}/>
-    <line class="hit hand" data-hit="hour" data-rot="hit-hour" x1="130" y1="130" x2="130" y2="74" stroke-width="30" ${rotStyle(T * .5)}/>
+    <line class="hit hand" data-hit="min"  data-rot="hit-min"  x1="130" y1="130" x2="130" y2="34" stroke-width="44" ${rotStyle(T * 6)}/>
+    <line class="hit hand" data-hit="hour" data-rot="hit-hour" x1="130" y1="130" x2="130" y2="74" stroke-width="50" ${rotStyle(T * .5)}/>
   </g>` : ''}
 </svg>`;
 }
@@ -638,6 +685,14 @@ function setHands(svg, T, instant) {
 function setGhost(svg, T) { rot(svg, 'ghost-hour', T * .5); rot(svg, 'ghost-min', T * 6); }
 const unwrap = (prev, target) => prev + (mod(target - prev + 180, 360) - 180);
 
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(err => {});
+  } else {
+    document.exitFullscreen();
+  }
+}
+
 function header(title, extraBtn = '') {
   return `<header class="topbar">
     <button class="btn btn-ghost btn-sm" data-act="back" aria-label="Zurück zum Menü"><span aria-hidden="true">←</span><span class="hide-sm">Zurück</span></button>
@@ -645,8 +700,9 @@ function header(title, extraBtn = '') {
     <div class="topbar-right">
       <span class="pill" title="Deine Sterne"><span aria-hidden="true">⭐</span><b class="js-stars">${state.stars}</b></span>
       ${extraBtn}
-      <button class="icon-btn js-help24" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
+      <button class="icon-btn js-help24 ${state.show24 ? 'on' : ''}" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
       <button class="icon-btn js-mute"></button>
+      <button class="icon-btn js-fs" title="Vollbild" aria-label="Vollbild">🔲</button>
     </div>
   </header>`;
 }
@@ -670,16 +726,15 @@ function bindMute(root) {
 function bindHelp24(root) {
   const btn = $('.js-help24', root); if (!btn) return;
   const upd = () => {
-    const on = state.show24;
-    btn.style.background = on ? 'var(--purple)' : 'var(--surface)';
-    btn.style.color = on ? '#fff' : 'var(--ink)';
-    $$('.clock').forEach(c => c.classList.toggle('show24', on));
+    $$('.clock').forEach(c => c.classList.toggle('show24', state.show24));
+    btn.classList.toggle('on', state.show24);
   };
   upd();
   btn.onclick = () => { state.show24 = !state.show24; store.set('uhr:show24', state.show24); upd(); };
 }
 function bindChrome(root) {
   const back = $('[data-act=back]', root); if (back) back.onclick = () => go('home');
+  const fs = $('.js-fs', root); if (fs) fs.onclick = toggleFullscreen;
   bindMute(root);
   bindHelp24(root);
 }
@@ -697,9 +752,12 @@ function go(name) {
 }
 
 const GAMES = [
-  { id: 'types',    icon: '🃏', title: 'Welche Uhren?', sub: 'Karten aufdecken',   c: 'yellow' },
+  { id: 'types',    icon: '🃏', title: 'Welche Uhren?', sub: 'Karten aufdecken',   c: 'blue' },
   { id: 'set',      icon: '⏰', title: 'Stell die Uhr ein', sub: 'Zeiger ziehen',      c: 'green' },
   { id: 'read',     icon: '👀', title: 'Wie spät ist es?',  sub: 'Uhrzeit ablesen',    c: 'purple' },
+  { id: 'math',     icon: '🍰', title: 'Zeit-Mathe',        sub: 'Zeitspannen',        c: 'pink' },
+  { id: 'day',      icon: '☀️', title: 'Mein Tag',          sub: 'Tagesablauf',        c: 'yellow' },
+  { id: 'duel',     icon: '⚔️', title: 'Teamduell',         sub: 'Split-Screen Modus', c: 'coral' },
   { id: 'memory',   icon: '🧩', title: 'Uhren-Memory',      sub: 'Finde die Paare',    c: 'orange' },
   { id: 'timer',    icon: '⏱️', title: 'Zeitgefühl',       sub: 'Sekunden schätzen',  c: 'pink' },
   { id: 'set_rush', icon: '🔥', title: 'Tempo-Runde',       sub: 'Uhren auf Zeit',     c: 'coral' },
@@ -714,8 +772,9 @@ screens.home = root => {
     <span class="pill"><span aria-hidden="true">🏅</span>${r.t}</span>
     <div class="topbar-right">
       <span class="pill" title="Deine Sterne"><span aria-hidden="true">⭐</span><b class="js-stars">${state.stars}</b></span>
-      <button class="icon-btn js-help24" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
+      <button class="icon-btn js-help24 ${state.show24 ? 'on' : ''}" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
       <button class="icon-btn js-theme"></button>
+      <button class="icon-btn js-fs" title="Vollbild" aria-label="Vollbild">🔲</button>
       <button class="icon-btn js-mute"></button>
     </div>
   </header>
@@ -734,8 +793,7 @@ screens.home = root => {
     </section>
     <section class="games" aria-label="Spiele">
       ${GAMES.map(g => `<button class="gcard ${g.c}" data-go="${g.id}">
-        <span class="gicon" aria-hidden="true">${g.icon}</span>
-        <span class="gtitle">${g.title}</span><span class="gsub">${g.sub}</span>
+        <span class="gtitle"><span class="gicon" aria-hidden="true">${g.icon}</span>${g.title}</span><span class="gsub">${g.sub}</span>
       </button>`).join('')}
     </section>
   </main>
@@ -756,14 +814,7 @@ screens.home = root => {
         <button class="btn btn-coral" data-m="yes">Ja, löschen</button>
         <button class="btn btn-ghost" data-m="no">Abbrechen</button>
       </div>`,
-      {
-        yes: () => {
-          state.stars = 0;
-          store.set('uhr:stars', 0);
-          go('home');
-          toast('Alle Sterne wurden zurückgesetzt!');
-        }
-      }
+      { yes: () => { state.stars = 0; store.set('uhr:stars', 0); go('home'); toast('Alle Sterne wurden zurückgesetzt!'); } }
     );
   };
 
@@ -831,16 +882,9 @@ screens.types = root => {
       }, 700);
     }
   }
-  grid.addEventListener('click', e => {
-    const card = e.target.closest('.tcard'); if (card) flip(card);
-  });
-  grid.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const card = e.target.closest('.tcard'); if (card && e.target === card) { e.preventDefault(); flip(card); }
-  });
-  again.onclick = () => {
-    flipped.clear(); $$('.tcard', root).forEach(c => c.classList.remove('flipped')); again.hidden = true; progress();
-  };
+  grid.addEventListener('click', e => { const card = e.target.closest('.tcard'); if (card) flip(card); });
+  grid.addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const card = e.target.closest('.tcard'); if (card && e.target === card) { e.preventDefault(); flip(card); } });
+  again.onclick = () => { flipped.clear(); $$('.tcard', root).forEach(c => c.classList.remove('flipped')); again.hidden = true; progress(); };
   progress();
 };
 
@@ -849,7 +893,8 @@ screens.set = root => {
   <main class="play">
     <div class="card task">
       <div class="task-tools">
-        <button class="icon-btn sm" id="hintBtn" aria-label="Tipp zeigen">💡</button>
+        <button class="icon-btn sm" id="textOnlyBtn" aria-label="Nur Wörter Modus" title="Zahlen verstecken">📝</button>
+        <button class="icon-btn sm" id="hintBtn" aria-label="Tipp zeigen" title="Hilfslinien">💡</button>
       </div>
       <div class="task-label">Stelle die Uhr auf</div>
       <div class="task-time" id="tt"></div>
@@ -869,11 +914,18 @@ screens.set = root => {
   const svg = $('svg', cw);
 
   let T = 360, target = null, prev = null, streak = 0, attempts = 0, hinted = false, locked = false;
+  let textOnly = false;
   const timers = [];
   const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
   const setFb = (html, cls = '') => { fb.innerHTML = html ? `<div class="fb ${cls}">${html}</div>` : ''; };
   const setStreak = () => { $('#streak', root).textContent = streak; };
   const tgtT = () => (target.h % 12) * 60 + target.m;
+
+  $('#textOnlyBtn', root).onclick = function() {
+    textOnly = !textOnly;
+    this.classList.toggle('on', textOnly);
+    $('#tt', root).hidden = textOnly;
+  };
 
   function newTask() {
     target = randTime(lvl(), [prev, { h: 6, m: 0 }, { h: 18, m: 0 }]); prev = target;
@@ -885,18 +937,20 @@ screens.set = root => {
     $('#tw', root).textContent = `${daypart(target.h).emoji} ${formalTime(target.h, target.m)}`;
   }
 
-  let active = null;
+  let activeDrag = {};
   const angleFrom = e => {
     const r = svg.getBoundingClientRect();
     return mod(Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI, 360);
   };
   svg.addEventListener('pointerdown', e => {
     const h = e.target.closest('[data-hit]'); if (!h || locked) return;
-    e.preventDefault(); active = h.dataset.hit;
+    e.preventDefault();
+    activeDrag[e.pointerId] = h.dataset.hit;
     try { svg.setPointerCapture(e.pointerId); } catch (_) {}
     svg.classList.remove('idle'); svg.classList.add('dragging'); setFb('');
   });
   svg.addEventListener('pointermove', e => {
+    const active = activeDrag[e.pointerId];
     if (!active) return;
     const deg = angleFrom(e); let nT = T;
     if (active === 'min') {
@@ -911,7 +965,7 @@ screens.set = root => {
     }
     if (nT !== T) { T = nT; setHands(svg, T); sfx.tick(); }
   });
-  const end = () => { active = null; svg.classList.remove('dragging'); };
+  const end = e => { delete activeDrag[e.pointerId]; if(Object.keys(activeDrag).length===0) svg.classList.remove('dragging'); };
   svg.addEventListener('pointerup', end);
   svg.addEventListener('pointercancel', end);
 
@@ -926,11 +980,11 @@ screens.set = root => {
     const cur = mod(T, 720);
     if (cur === tgtT()) {
       locked = true; doneBtn.disabled = true;
-      sfx.ok(); confetti(110); stage.classList.add('ok');
+      sfx.ok(); stage.classList.add('ok'); // NO confetti here, just okpulse!
       streak++; setStreak(); addStars(1);
       const extra = `<br><small>${digital(target)} Uhr = ${germanTime(target.h, target.m)} ${daypart(target.h).at}</small>`;
       setFb('Richtig! Super gemacht! ⭐ +1' + extra, 'good');
-      later(newTask, 3400);
+      later(newTask, 3000);
     } else {
       attempts++; sfx.no(); streak = 0; setStreak();
       const minBad = mod(T, 60) !== target.m;
@@ -949,6 +1003,71 @@ screens.set = root => {
   return () => timers.forEach(clearTimeout);
 };
 
+screens.read = root => {
+  root.innerHTML = header('Wie spät ist es?') + levelChips() + `
+  <main class="play read">
+    <div class="stage" id="stage"><div class="clock-wrap" id="cw"></div></div>
+    <div class="card task">
+      <div class="task-label" id="lab">Welche Uhrzeit ist es?</div>
+      <div class="task-words" id="dp"></div>
+      <div class="answers" id="ans"></div>
+      <div class="task-meta">🔥 Serie: <b id="streak">0</b></div>
+    </div>
+    <div class="actions">
+      <div class="feedback" id="fb" aria-live="polite"></div>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const cw = $('#cw', root), stage = $('#stage', root), fb = $('#fb', root), ans = $('#ans', root);
+  cw.innerHTML = clockSVG({ label: 'Lies die Uhrzeit ab' });
+  const svg = $('svg', cw);
+
+  const COL = ['btn-blue', 'btn-purple', 'btn-pink'];
+  const WRONG24 = ['Nicht ganz. Schau auch auf die Tageszeit!', 'Tipp: Ab 13 Uhr zählt man weiter: 13, 14, 15 … bis 24.', 'Probier es noch einmal! Nachmittags und abends rechnest du 12 dazu.'];
+  let t = null, prev = null, opts = [], tries = 0, locked = false, streak = 0, auto = 0;
+  const timers = [];
+  const setFb = (html, cls = '') => { fb.innerHTML = html ? `<div class="fb ${cls}">${html}</div>` : ''; };
+  const setStreak = () => { $('#streak', root).textContent = streak; };
+
+  function newTask() {
+    clearTimeout(auto);
+    t = randTime(lvl(), [prev]); prev = t; tries = 0; locked = false;
+    
+    // Get exactly 2 wrong options that are visually distinct
+    const wrong = getWrongOptions(t, lvl(), 2);
+    opts = shuffle([t, ...wrong]);
+
+    const dpEl = $('#dp', root), d = daypart(t.h);
+    dpEl.textContent = `${d.emoji} Es ist ${d.name}`;
+    ans.innerHTML = opts.map((o, i) => `<button class="btn ans-btn ${COL[i]}" data-i="${i}">${digital(o)}</button>`).join('');
+    setFb(''); stage.classList.remove('ok');
+    setHands(svg, (t.h % 12) * 60 + t.m, true);
+  }
+  
+  ans.addEventListener('click', e => {
+    const b = e.target.closest('.ans-btn'); if (!b || locked || b.disabled) return;
+    const o = opts[+b.dataset.i];
+    if (o.h === t.h && o.m === t.m) {
+      locked = true; sfx.ok(); stage.classList.add('ok'); // NO fireworks, just green okpulse
+      $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
+      b.classList.add('right');
+      const words = germanTime(t.h, t.m) + ' ' + daypart(t.h).at, first = tries === 0;
+      if (first) { streak++; addStars(1); }
+      setStreak();
+      setFb(`Richtig! ${digital(t)} Uhr ist „${words}“.${first ? ' ⭐ +1' : ''}`, 'good');
+      auto = setTimeout(newTask, 3000); timers.push(auto);
+    } else {
+      tries++; sfx.no(); streak = 0; setStreak();
+      b.classList.add('wrong'); b.disabled = true;
+      setFb(WRONG24[Math.min(tries - 1, WRONG24.length - 1)], 'bad');
+    }
+  });
+  bindLevels(root, () => { streak = 0; setStreak(); newTask(); });
+  newTask();
+  return () => timers.forEach(clearTimeout);
+};
+
 screens.set_rush = root => {
   root.innerHTML = header('Tempo-Runde') + levelChips() + `
   <main class="play">
@@ -958,7 +1077,7 @@ screens.set_rush = root => {
       <div style="margin:20px 0; font-size:40px; line-height:1">⏳</div>
       <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
         <button class="btn btn-blue js-rush-start" data-t="30">30 Sekunden</button>
-        <button class="btn btn-blue js-rush-start" data-t="60">60 Sekunden</button>
+        <button class="btn btn-coral js-rush-start" data-t="60">60 Sekunden</button>
       </div>
     </div>
     
@@ -992,24 +1111,9 @@ screens.set_rush = root => {
     locked = false;
     stage.classList.remove('ok');
     
-    // Generiere 4 Antwortmöglichkeiten (1 richtige, 3 falsche)
-    // Entferne direkt optisch identische Zeiten (z.B. 06:30 und 18:30)
-    let falsies = makeOptions(target, lvl()).filter(f => (f.h % 12 !== target.h % 12) || (f.m !== target.m));
-    
-    let guard = 0;
-    while(falsies.length < 3 && guard < 100) {
-       guard++;
-       let cand = randTime(lvl());
-       
-       // Verhindere optisch identische Uhrzeiten wie die richtige Antwort (z.B. 18:30 bei 06:30 Ziel)
-       if (cand.h % 12 === target.h % 12 && cand.m === target.m) continue;
-       
-       // Verhindere Duplikate und optisch identische Zeiten unter den falschen Antworten selbst
-       if (falsies.some(f => f.h % 12 === cand.h % 12 && f.m === cand.m)) continue;
-       
-       falsies.push(cand);
-    }
-    opts = shuffle([target, ...falsies.slice(0, 3)]);
+    // Exactly 3 distinct wrong options
+    const falsies = getWrongOptions(target, lvl(), 3);
+    opts = shuffle([target, ...falsies]);
     
     ans.innerHTML = opts.map((o, i) => `<button class="btn ans-btn ${COL[i]}" data-i="${i}">${digital(o)}</button>`).join('');
     setHands(svg, (target.h % 12) * 60 + target.m, true);
@@ -1033,10 +1137,7 @@ screens.set_rush = root => {
     $('#timeLeft', root).textContent = Math.ceil(left/1000) + 's';
     $('#timeBar', root).style.width = (left / (timeTotal*1000) * 100) + '%';
     
-    if (left <= 0) {
-      clearInterval(timerIv);
-      endGame();
-    }
+    if (left <= 0) { clearInterval(timerIv); endGame(); }
   }
 
   function endGame() {
@@ -1044,7 +1145,7 @@ screens.set_rush = root => {
     const earned = Math.floor(score / 3); // 1 Stern pro 3 richtige Antworten
     if(earned > 0) addStars(earned);
     sfx.win();
-    if(earned > 0) confetti(150);
+    if(earned > 0) confetti(150); // Konfetti für Highscore okay
     
     modal(`<div class="big">⏱️</div><h2>Zeit abgelaufen!</h2><p>Du hast ${score} Uhren richtig erkannt.</p>${earned > 0 ? `<p>Dafür bekommst du ${earned} ⭐!</p>` : ''}
       <div class="row">
@@ -1052,10 +1153,7 @@ screens.set_rush = root => {
         <button class="btn btn-ghost" data-m="home">Menü</button>
       </div>`,
       {
-        again: () => {
-          startScreen.hidden = false;
-          taskScreen.hidden = true; stage.hidden = true; actionsScreen.hidden = true;
-        },
+        again: () => { startScreen.hidden = false; taskScreen.hidden = true; stage.hidden = true; actionsScreen.hidden = true; },
         home: () => go('home')
       }
     );
@@ -1069,84 +1167,308 @@ screens.set_rush = root => {
       $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
       b.classList.add('right');
       score++; $('#score', root).textContent = score;
-      setTimeout(newTask, 400); // Sofortige nächste Frage
+      setTimeout(newTask, 400); 
     } else {
-      sfx.no();
-      b.classList.add('wrong'); b.disabled = true; // Falschen Button ausgrauen/wackeln
+      sfx.no(); b.classList.add('wrong'); b.disabled = true;
     }
   });
 
-  bindLevels(root, () => {
-    if(!startScreen.hidden) return; // Noch nicht gestartet
-    newTask(); // Uhr sofort anpassen, wenn Level gewechselt wird
-  });
-  
+  bindLevels(root, () => { if(!startScreen.hidden) return; newTask(); });
   return () => { clearInterval(timerIv); };
 };
 
-screens.read = root => {
-  root.innerHTML = header('Wie spät ist es?') + levelChips() + `
+screens.math = root => {
+  root.innerHTML = header('Zeit-Mathe') + levelChips() + `
   <main class="play read">
     <div class="stage" id="stage"><div class="clock-wrap" id="cw"></div></div>
     <div class="card task">
-      <div class="task-label" id="lab">Welche Uhrzeit ist es? (24-Stunden-Schreibweise)</div>
-      <div class="task-words" id="dp"></div>
+      <div class="task-label" id="lab"></div>
+      <div class="task-words" id="dp">Rechne gut nach!</div>
       <div class="answers" id="ans"></div>
       <div class="task-meta">🔥 Serie: <b id="streak">0</b></div>
     </div>
     <div class="actions">
       <div class="feedback" id="fb" aria-live="polite"></div>
-      <button class="btn btn-blue" id="next" hidden>Weiter ➜</button>
     </div>
   </main>`;
   bindChrome(root);
 
-  const cw = $('#cw', root), stage = $('#stage', root), fb = $('#fb', root), ans = $('#ans', root), next = $('#next', root);
-  cw.innerHTML = clockSVG({ label: 'Lies die Uhrzeit ab' });
-  const svg = $('svg', cw);
-
-  const COL = ['btn-blue', 'btn-purple', 'btn-pink'];
-  const WRONG24 = ['Nicht ganz. Schau auch auf die Tageszeit!', 'Tipp: Ab 13 Uhr zählt man weiter: 13, 14, 15 … bis 24.', 'Probier es noch einmal! Nachmittags und abends rechnest du 12 dazu.'];
-  let t = null, prev = null, opts = [], tries = 0, locked = false, streak = 0, auto = 0;
+  const cw = $('#cw', root), stage = $('#stage', root), fb = $('#fb', root), ans = $('#ans', root), lab = $('#lab', root);
+  
+  const COL = ['btn-pink', 'btn-blue', 'btn-green'];
+  let startT = null, resT = null, opts = [], locked = false, streak = 0, auto = 0;
   const timers = [];
   const setFb = (html, cls = '') => { fb.innerHTML = html ? `<div class="fb ${cls}">${html}</div>` : ''; };
   const setStreak = () => { $('#streak', root).textContent = streak; };
 
   function newTask() {
     clearTimeout(auto);
-    t = randTime(lvl(), [prev]); prev = t; tries = 0; locked = false;
-    opts = shuffle([t, ...makeOptions(t, lvl())]);
+    startT = randTime(lvl());
+    const durations = [15, 30, 45, 60, 90, 120];
+    const dur = pick(durations);
+    
+    // Calculate result time
+    let th = startT.h + Math.floor((startT.m + dur) / 60);
+    let tm = (startT.m + dur) % 60;
+    th = th % 24;
+    resT = { h: th, m: tm };
 
-    const dpEl = $('#dp', root), d = daypart(t.h);
-    dpEl.textContent = `${d.emoji} Es ist ${d.name}`;
+    locked = false;
+    const falsies = getWrongOptions(resT, lvl(), 2);
+    opts = shuffle([resT, ...falsies]);
+
+    lab.textContent = `Es ist ${digital(startT)} Uhr. Wie spät ist es in ${dur} Minuten?`;
     ans.innerHTML = opts.map((o, i) => `<button class="btn ans-btn ${COL[i]}" data-i="${i}">${digital(o)}</button>`).join('');
-    next.hidden = true; setFb(''); stage.classList.remove('ok');
-    setHands(svg, (t.h % 12) * 60 + t.m, true);
+    setFb(''); stage.classList.remove('ok');
+    
+    cw.innerHTML = clockSVG({ label: 'Rechne die Zeit', T: (startT.h%12)*60 + startT.m, pie: { start: startT.m, dur: dur } });
   }
-  
+
   ans.addEventListener('click', e => {
     const b = e.target.closest('.ans-btn'); if (!b || locked || b.disabled) return;
     const o = opts[+b.dataset.i];
-    if (o.h === t.h && o.m === t.m) {
-      locked = true; sfx.ok(); stage.classList.add('ok'); // Feuerwerk entfernt, leuchtet nur grün
+    if (o.h === resT.h && o.m === resT.m) {
+      locked = true; sfx.ok(); stage.classList.add('ok'); // Green pulse, NO confetti
       $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
       b.classList.add('right');
-      const words = germanTime(t.h, t.m) + ' ' + daypart(t.h).at, first = tries === 0;
-      if (first) { streak++; addStars(1); }
-      setStreak();
-      setFb(`Richtig! ${digital(t)} Uhr ist „${words}“.${first ? ' ⭐ +1' : ''}`, 'good');
-      next.hidden = false;
-      auto = setTimeout(newTask, 3200); timers.push(auto);
+      streak++; setStreak(); addStars(1);
+      setFb(`Richtig! In ${lab.textContent.match(/\d+ Minuten/)[0]} ist es ${digital(resT)} Uhr! ⭐ +1`, 'good');
+      auto = setTimeout(newTask, 3000); timers.push(auto);
     } else {
-      tries++; sfx.no(); streak = 0; setStreak();
+      sfx.no(); streak = 0; setStreak();
       b.classList.add('wrong'); b.disabled = true;
-      setFb(WRONG24[Math.min(tries - 1, WRONG24.length - 1)], 'bad');
+      setFb('Nicht ganz, rechne noch einmal nach!', 'bad');
     }
   });
-  next.onclick = newTask;
+
   bindLevels(root, () => { streak = 0; setStreak(); newTask(); });
   newTask();
   return () => timers.forEach(clearTimeout);
+};
+
+screens.day = root => {
+  root.innerHTML = `<div class="sky" id="sky" aria-hidden="true"></div>` + header('Mein Tag') + `
+  <main class="play read" style="position:relative; z-index:10">
+    <div class="stage" id="stage"><div class="clock-wrap" id="cw" style="background:var(--face)"></div></div>
+    <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); position:relative; top:clamp(70px, 20vh, 200px)">
+      <div class="task-label">Was passiert meistens um diese Zeit?</div>
+      <div class="task-time" id="tt" style="font-size:clamp(32px,6vw,54px);margin:8px 0"></div>
+      <div class="answers" id="ans" style="grid-template-columns:minmax(0,1fr);gap:8px"></div>
+      <div class="task-meta">🔥 Serie: <b id="streak">0</b></div>
+    </div>
+    <div class="actions" style="position:relative; top:clamp(70px, 20vh, 200px)">
+      <div class="feedback" id="fb" aria-live="polite"></div>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const EVENTS = [
+    { name: 'Aufstehen', emoji: '🛏️', h: [6,7,8] },
+    { name: 'Schule', emoji: '🎒', h: [9,10,11,12] },
+    { name: 'Mittagessen', emoji: '🍝', h: [12,13,14] },
+    { name: 'Spielen & Freunde', emoji: '⚽', h: [15,16,17] },
+    { name: 'Abendessen', emoji: '🍽️', h: [18,19,20] },
+    { name: 'Schlafen', emoji: '😴', h: [20,21,22,23] }
+  ];
+
+  const cw = $('#cw', root), stage = $('#stage', root), fb = $('#fb', root), ans = $('#ans', root);
+  const skyEl = $('#sky', root);
+  
+  let targetEvent = null, prevEvent = null, curT = null, opts = [], locked = false, streak = 0, auto = 0;
+  const timers = [];
+  const setFb = (html, cls = '') => { fb.innerHTML = html ? `<div class="fb ${cls}">${html}</div>` : ''; };
+  const setStreak = () => { $('#streak', root).textContent = streak; };
+
+  function applySky(h) { skyEl.className = 'sky ' + skyClass(h); }
+
+  function newTask() {
+    clearTimeout(auto);
+    let guard = 0;
+    do { targetEvent = pick(EVENTS); guard++; } while(targetEvent === prevEvent && guard < 20);
+    prevEvent = targetEvent;
+
+    const hh = pick(targetEvent.h);
+    const mm = pick([0, 15, 30, 45]);
+    curT = { h: hh, m: mm };
+
+    locked = false;
+    let wrongEvents = shuffle(EVENTS.filter(e => e !== targetEvent)).slice(0, 2);
+    opts = shuffle([targetEvent, ...wrongEvents]);
+
+    $('#tt', root).textContent = digital(curT) + ' Uhr';
+    ans.innerHTML = opts.map((o, i) => `<button class="btn ans-btn text-sm btn-ghost" data-i="${i}">${o.emoji} ${o.name}</button>`).join('');
+    setFb(''); stage.classList.remove('ok');
+    
+    cw.innerHTML = clockSVG({ label: 'Tageszeit', T: (hh%12)*60 + mm });
+    applySky(hh);
+  }
+
+  ans.addEventListener('click', e => {
+    const b = e.target.closest('.ans-btn'); if (!b || locked || b.disabled) return;
+    const o = opts[+b.dataset.i];
+    if (o.name === targetEvent.name) {
+      locked = true; sfx.ok(); stage.classList.add('ok'); // No confetti
+      $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
+      b.classList.remove('btn-ghost'); b.classList.add('right');
+      streak++; setStreak(); addStars(1);
+      setFb(`Richtig! Um ${digital(curT)} Uhr ist meistens Zeit für ${o.name}. ⭐ +1`, 'good');
+      auto = setTimeout(newTask, 3000); timers.push(auto);
+    } else {
+      sfx.no(); streak = 0; setStreak();
+      b.classList.add('wrong'); b.disabled = true;
+      setFb('Das passt nicht ganz zur Uhrzeit. Was könnte es sonst sein?', 'bad');
+    }
+  });
+
+  newTask();
+  return () => timers.forEach(clearTimeout);
+};
+
+screens.duel = root => {
+  root.innerHTML = header('Teamduell') + `
+  <main class="play" style="display:flex">
+    <!-- START SCREEN -->
+    <div class="card task" id="duelStart" style="margin:auto">
+      <div class="task-label">Wie viele Punkte zum Sieg?</div>
+      <div style="margin:20px 0; font-size:40px; line-height:1">⚔️</div>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-coral js-duel-start" data-t="5">5 Punkte</button>
+        <button class="btn btn-coral js-duel-start" data-t="10">10 Punkte</button>
+      </div>
+    </div>
+    
+    <!-- GAME SCREEN -->
+    <div class="team-board" id="duelTask" hidden>
+      <div class="team-panel team-red" style="align-items:flex-start">
+        <div class="team-score" id="scoreRed">0</div>
+        <div class="answers" id="ansRed" style="display:flex;flex-direction:column;gap:12px;width:100%"></div>
+      </div>
+      <div class="team-stage" id="teamStage">
+         <div class="clock-wrap" id="cw"></div>
+      </div>
+      <div class="team-panel team-blue" style="align-items:flex-end">
+        <div class="team-score" id="scoreBlue">0</div>
+        <div class="answers" id="ansBlue" style="display:flex;flex-direction:column;gap:12px;width:100%;align-items:flex-end"></div>
+      </div>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const cw = $('#cw', root), startScreen = $('#duelStart', root), taskScreen = $('#duelTask', root), stage = $('#teamStage', root);
+  const ansRed = $('#ansRed', root), ansBlue = $('#ansBlue', root);
+  
+  let target = null, winScore = 5, scoreRed = 0, scoreBlue = 0, lockedRed = false, lockedBlue = false, lockedGlobal = true;
+  let optsRed = [], optsBlue = [];
+  let duelTimer = null;
+  
+  function startCountdown() {
+    lockedGlobal = true;
+    stage.classList.remove('pulse-red', 'pulse-blue');
+    ansRed.innerHTML = '';
+    ansBlue.innerHTML = '';
+    
+    let count = 3;
+    const renderCount = (c) => `<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--face); border-radius:50%; animation:pop 0.3s"><div style="font-family:var(--font-h); font-weight:700; color:var(--muted); font-size:clamp(16px, 2.4vw, 24px); margin-bottom:5px; text-align:center; padding:0 20px; line-height:1.2">Achtung<br>neue Uhrzeit!</div><div style="font-family:var(--font-h); font-weight:700; color:var(--blue); font-size:clamp(80px, 15vw, 140px); line-height:1">${c}</div></div>`;
+    
+    cw.innerHTML = renderCount(count);
+    sfx.tick();
+    
+    duelTimer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        cw.innerHTML = renderCount(count);
+        sfx.tick();
+      } else {
+        clearInterval(duelTimer);
+        newTask();
+      }
+    }, 1000);
+  }
+
+  function newTask() {
+    target = randTime(lvl());
+    lockedRed = false; lockedBlue = false; lockedGlobal = false;
+    stage.classList.remove('pulse-red', 'pulse-blue');
+    
+    // Exakt 2 falsche distinct Optionen generieren
+    const falsies = getWrongOptions(target, lvl(), 2);
+    const sharedOpts = [target, ...falsies];
+    
+    optsRed = shuffle([...sharedOpts]);
+    optsBlue = shuffle([...sharedOpts]);
+    
+    ansRed.innerHTML = optsRed.map((o, i) => `<button class="btn ans-btn btn-coral" data-i="${i}">${digital(o)}</button>`).join('');
+    ansBlue.innerHTML = optsBlue.map((o, i) => `<button class="btn ans-btn btn-blue" data-i="${i}">${digital(o)}</button>`).join('');
+    
+    cw.innerHTML = clockSVG({ label: 'Uhr ablesen', T: (target.h % 12)*60 + target.m, hit: false });
+  }
+
+  $$('.js-duel-start', root).forEach(btn => btn.onclick = () => {
+    winScore = +btn.dataset.t;
+    startScreen.hidden = true;
+    taskScreen.hidden = false;
+    scoreRed = 0; scoreBlue = 0;
+    $('#scoreRed', root).textContent = 0;
+    $('#scoreBlue', root).textContent = 0;
+    startCountdown();
+  });
+
+  function endGame(winnerName, winnerColor) {
+    lockedGlobal = true; lockedRed = true; lockedBlue = true;
+    sfx.win(); confetti(180); // Feuerwerk NUR hier beim echten Team-Sieg!
+    
+    modal(`<div class="big">🏆</div><h2 style="color:var(--${winnerColor})">Team ${winnerName} gewinnt!</h2><p>${scoreRed} : ${scoreBlue}</p>
+      <div class="row">
+        <button class="btn btn-green" data-m="again">Revanche</button>
+        <button class="btn btn-ghost" data-m="home">Beenden</button>
+      </div>`,
+      {
+        again: () => { startScreen.hidden = false; taskScreen.hidden = true; },
+        home: () => go('home')
+      }
+    );
+  }
+
+  function handleGuess(team, b, o) {
+    if (lockedGlobal) return;
+    const isRed = team === 'red';
+    if (isRed && lockedRed) return;
+    if (!isRed && lockedBlue) return;
+    
+    if (o.h === target.h && o.m === target.m) {
+      lockedGlobal = true; sfx.ok(); 
+      stage.classList.add(isRed ? 'pulse-red' : 'pulse-blue');
+      b.classList.add('right');
+      
+      if (isRed) { scoreRed++; $('#scoreRed', root).textContent = scoreRed; }
+      else { scoreBlue++; $('#scoreBlue', root).textContent = scoreBlue; }
+      
+      if (scoreRed >= winScore) setTimeout(() => endGame('Rot', 'coral'), 600);
+      else if (scoreBlue >= winScore) setTimeout(() => endGame('Blau', 'blue'), 600);
+      else setTimeout(startCountdown, 1200);
+      
+    } else {
+      sfx.no(); b.classList.add('wrong'); b.disabled = true;
+      if (isRed) {
+        lockedRed = true;
+        setTimeout(() => { if(!lockedGlobal) lockedRed = false; b.classList.remove('wrong'); b.disabled = false; }, 1500);
+      } else {
+        lockedBlue = true;
+        setTimeout(() => { if(!lockedGlobal) lockedBlue = false; b.classList.remove('wrong'); b.disabled = false; }, 1500);
+      }
+    }
+  }
+
+  ansRed.addEventListener('click', e => {
+    const b = e.target.closest('.ans-btn'); if (!b) return;
+    handleGuess('red', b, optsRed[+b.dataset.i]);
+  });
+  ansBlue.addEventListener('click', e => {
+    const b = e.target.closest('.ans-btn'); if (!b) return;
+    handleGuess('blue', b, optsBlue[+b.dataset.i]);
+  });
+  
+  return () => { clearInterval(duelTimer); };
 };
 
 screens.memory = root => {
@@ -1161,9 +1483,10 @@ screens.memory = root => {
   const grid = $('#grid', root);
   let cards = [], open = [], lock = false, moves = 0, pairs = 0;
   const timers = [];
+  let hideTimer = null;
 
   function deal() {
-    moves = 0; pairs = 0; open = []; lock = false;
+    moves = 0; pairs = 0; open = []; lock = false; clearTimeout(hideTimer);
     $('#mv', root).textContent = 0; $('#pr', root).textContent = 0;
     
     const l = lvl();
@@ -1181,9 +1504,18 @@ screens.memory = root => {
       </div>`).join('');
   }
   function flip(card) {
-    if (lock || card.classList.contains('flipped') || card.classList.contains('done')) return;
+    if (card.classList.contains('flipped') || card.classList.contains('done')) return;
+    
+    // Wenn bereits 2 offene falsche Karten da sind und man eine 3. drückt -> sofort schließen
+    if (open.length === 2) {
+       clearTimeout(hideTimer);
+       open.forEach(c => c.classList.remove('flipped'));
+       open = []; lock = false;
+    }
+    
     card.classList.add('flipped'); sfx.flip(); open.push(card);
     if (open.length < 2) return;
+    
     moves++; $('#mv', root).textContent = moves;
     const [a, b] = open.map(c => cards[+c.dataset.i].t);
     if (a.h === b.h && a.m === b.m) {
@@ -1191,8 +1523,8 @@ screens.memory = root => {
       open = []; pairs++; $('#pr', root).textContent = pairs; sfx.match();
       if (pairs === 6) timers.push(setTimeout(win, 700));
     } else {
-      lock = true; sfx.no();
-      timers.push(setTimeout(() => { open.forEach(c => c.classList.remove('flipped')); open = []; lock = false; }, 1000));
+      // 5 Sekunden lang offen lassen
+      hideTimer = setTimeout(() => { open.forEach(c => c.classList.remove('flipped')); open = []; lock = false; }, 5000);
     }
   }
   function win() {
@@ -1203,14 +1535,11 @@ screens.memory = root => {
       { again: deal, home: () => go('home') });
   }
   grid.addEventListener('click', e => { const c = e.target.closest('.mcard'); if (c) flip(c); });
-  grid.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const c = e.target.closest('.mcard'); if (c) { e.preventDefault(); flip(c); }
-  });
+  grid.addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const c = e.target.closest('.mcard'); if (c) { e.preventDefault(); flip(c); } });
   $('#reshuffle', root).onclick = deal;
   bindLevels(root, deal);
   deal();
-  return () => timers.forEach(clearTimeout);
+  return () => { timers.forEach(clearTimeout); clearTimeout(hideTimer); };
 };
 
 screens.timer = root => {
@@ -1251,7 +1580,6 @@ screens.timer = root => {
   let targetSec = 10;
   let startTime = 0;
   let running = false;
-  let displayInterval;
 
   const setTime = (s) => {
     if(running) return;
@@ -1296,12 +1624,17 @@ screens.timer = root => {
 
       let msg = "";
       let cls = "good";
-      if (diff <= 1.0) {
-        msg = "Wow, punktgenau! Fantastisches Zeitgefühl! ⭐ +2";
-        addStars(2); sfx.win(); confetti(100);
+      const isExact = elapsed.toFixed(1) === targetSec.toFixed(1);
+
+      if (isExact) {
+        msg = "Perfekt! Auf die Zehntelsekunde genau! 🌟 +3";
+        addStars(3); sfx.win(); confetti(150); $('#stage', root).classList.add('ok'); setTimeout(()=>$('#stage', root).classList.remove('ok'), 1000);
+      } else if (diff <= 1.0) {
+        msg = "Wow, super! Fantastisches Zeitgefühl! ⭐ +2";
+        addStars(2); sfx.ok(); $('#stage', root).classList.add('ok'); setTimeout(()=>$('#stage', root).classList.remove('ok'), 1000); // Green pulse instead of confetti
       } else if (diff <= 3.0) {
         msg = "Sehr nah dran! Super gemacht! ⭐ +1";
-        addStars(1); sfx.ok(); confetti(50);
+        addStars(1); sfx.ok();
       } else {
         msg = "Guter Versuch! Das übt sich mit der Zeit. Probier es gleich nochmal!";
         cls = "fb";
@@ -1310,25 +1643,24 @@ screens.timer = root => {
       fb.innerHTML = `<div class="fb ${cls}">Ziel: ${targetSec}s &nbsp;•&nbsp; Deine Zeit: ${elapsed.toFixed(1)}s<br>${msg}</div>`;
     }
   };
-
-  return () => clearInterval(displayInterval);
+  return () => {};
 };
 
 screens.explore = root => {
   root.innerHTML = `<div class="sky" id="sky" aria-hidden="true"></div>
   <header class="topbar">
-    <button class="btn btn-ghost btn-sm" data-act="back" aria-label="Zurück zum Menü"><span aria-hidden="true">←</span><span class="hide-sm">Zurück</span></button>
-    <h1 class="topbar-title">Entdecker-Uhr</h1>
-    <div class="topbar-right">
+    <button class="btn btn-ghost btn-sm" data-act="back" aria-label="Zurück zum Menü" style="pointer-events:auto"><span aria-hidden="true">←</span><span class="hide-sm">Zurück</span></button>
+    <h1 class="topbar-title" style="pointer-events:auto">Entdecker-Modus</h1>
+    <div class="topbar-right" style="pointer-events:auto">
       <span class="pill"><span aria-hidden="true">⭐</span><b class="js-stars">${state.stars}</b></span>
-      <button class="icon-btn js-help24" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
+      <button class="icon-btn js-help24 ${state.show24 ? 'on' : ''}" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
       <button class="icon-btn js-mute"></button>
     </div>
   </header>
   <main class="play">
     <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)">
       <div class="task-tools">
-        <button class="icon-btn sm js-master" title="Antwort verbergen (für Spielleitung)">👀</button>
+        <button class="icon-btn sm js-master" title="Antwort komplett verbergen (Spielleitung)">👀</button>
       </div>
       <div class="task-label">Drehe die Zeiger, wie du magst</div>
       <div class="task-time" id="tt"></div>
@@ -1347,10 +1679,7 @@ screens.explore = root => {
   $('.js-master', root).onclick = function() {
     masterHide = !masterHide;
     this.textContent = masterHide ? '🙈' : '👀';
-    const filt = masterHide ? 'blur(10px) opacity(0.3)' : 'none';
-    $('#tw', root).style.filter = filt;
-    $('#tt', root).style.filter = filt;
-    $('#meta', root).style.filter = filt;
+    root.classList.toggle('secret-mode', masterHide); // opacity 0 für die texte via CSS
   };
 
   const skyEl = $('#sky', root);
@@ -1358,16 +1687,13 @@ screens.explore = root => {
   cw.innerHTML = clockSVG({ knobs: true, hit: true, T: 0, label: 'Freie Uhr – ziehe die Zeiger' });
   const svg = $('svg', cw);
 
-  // Starte mit der aktuellen echten Uhrzeit
   const now = new Date();
   let T = now.getHours() * 60 + now.getMinutes(); 
-  
-  let active = null;
+  let activeDrag = {};
 
   function applySky() {
     const h = Math.floor(mod(T, 1440) / 60);
-    const cls = skyClass(h);
-    skyEl.className = 'sky ' + cls;
+    skyEl.className = 'sky ' + skyClass(h);
   }
   
   function updateText() {
@@ -1386,17 +1712,18 @@ screens.explore = root => {
   
   svg.addEventListener('pointerdown', e => {
     const h = e.target.closest('[data-hit]'); if (!h) return;
-    e.preventDefault(); active = h.dataset.hit;
+    e.preventDefault(); activeDrag[e.pointerId] = h.dataset.hit;
     try { svg.setPointerCapture(e.pointerId); } catch (_) {}
     svg.classList.remove('idle'); svg.classList.add('dragging');
   });
   
   svg.addEventListener('pointermove', e => {
+    const active = activeDrag[e.pointerId];
     if (!active) return;
     const deg = angleFrom(e); let nT = T;
     
     if (active === 'min') {
-      const m = mod(Math.round(deg / 6), 60); // 1-Minuten Schritte
+      const m = mod(Math.round(deg / 6), 60);
       let d = m - mod(T, 60); 
       if (d > 30) d -= 60; if (d < -30) d += 60;
       nT = T + d;
@@ -1410,15 +1737,11 @@ screens.explore = root => {
       nT = T + dH * 60;
     }
     if (nT !== T) { 
-      T = nT; 
-      setHands(svg, T); 
-      sfx.tick(); 
-      applySky(); 
-      updateText(); 
+      T = nT; setHands(svg, T); sfx.tick(); applySky(); updateText(); 
     }
   });
   
-  const end = () => { active = null; svg.classList.remove('dragging'); };
+  const end = e => { delete activeDrag[e.pointerId]; if(Object.keys(activeDrag).length===0) svg.classList.remove('dragging'); };
   svg.addEventListener('pointerup', end);
   svg.addEventListener('pointercancel', end);
 
