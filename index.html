@@ -69,7 +69,6 @@ body{
 :focus-visible{outline:4px solid var(--yellow);outline-offset:3px;border-radius:12px}
 button{font:inherit}
 
-/* ---------- Layout-Grundgerüst ---------- */
 #app{height:100%;position:relative}
 .screen{
   height:100%;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px;
@@ -79,7 +78,7 @@ button{font:inherit}
 .screen::-webkit-scrollbar{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;position:relative;z-index:10}
 .topbar-title{
   margin:0;flex:1;text-align:center;line-height:1.1;
   font-family:var(--font-h);font-weight:700;font-size:clamp(20px,4.2vw,34px);
@@ -113,6 +112,7 @@ button{font:inherit}
 .btn:disabled{opacity:.55;cursor:default;transform:none;filter:none}
 .btn-green{--c:var(--green);--cd:var(--green-d)}
 .btn-blue{--c:var(--blue);--cd:var(--blue-d)}
+.btn-coral{--c:var(--coral);--cd:var(--coral-d)}
 .btn-purple{--c:var(--purple);--cd:var(--purple-d)}
 .btn-pink{--c:var(--pink);--cd:var(--pink-d)}
 .btn-ghost{--c:var(--surface);--cd:var(--line);color:var(--ink)}
@@ -121,7 +121,7 @@ button{font:inherit}
 .hide-sm{display:inline}
 @media (max-width:480px){.hide-sm{display:none}}
 
-.levels{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;flex:none}
+.levels{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;flex:none;position:relative;z-index:10}
 .chip{
   border:0;cursor:pointer;color:var(--muted);background:var(--surface);border-radius:999px;
   font-family:var(--font-h);font-weight:600;font-size:clamp(13px,2vw,17px);
@@ -131,9 +131,6 @@ button{font:inherit}
 .chip.on{background:var(--blue);color:#fff;box-shadow:0 3px 0 var(--blue-d)}
 .chip.on b{background:rgba(255,255,255,.25);color:#fff}
 @media (max-width:520px){.chip:not(.on) span{display:none}.chip:not(.on){padding:.35em .4em}}
-.chip.mode{padding:.35em .95em}
-.chip.mode.on{background:var(--purple);box-shadow:0 3px 0 var(--purple-d)}
-.sep{width:10px}
 
 .clock-wrap{
   width:min(100%,var(--cs,300px),640px);aspect-ratio:1;border-radius:50%;
@@ -170,6 +167,7 @@ button{font:inherit}
   --cs:max(230px,calc(var(--vh) - 470px));
   flex:1;min-height:0;display:grid;gap:14px;justify-items:center;align-content:center;
   grid-template-columns:minmax(0,1fr);grid-template-areas:"task" "stage" "actions";
+  position:relative;z-index:1;
 }
 .play.read{--cs:max(230px,calc(var(--vh) - 410px));grid-template-areas:"stage" "task" "actions"}
 @media (min-width:860px) and (min-aspect-ratio:5/4){
@@ -184,18 +182,20 @@ button{font:inherit}
 .stage{grid-area:stage;width:100%;display:grid;place-items:center;align-self:center}
 .stage.ok .clock-wrap{animation:okpulse .9s ease-out}
 @keyframes okpulse{0%{box-shadow:0 0 0 0 rgba(24,169,87,.7)}100%{box-shadow:0 0 0 46px rgba(24,169,87,0)}}
+@keyframes pulse-timer {0%{transform:scale(1);box-shadow:0 0 0 0 rgba(59,130,246,0.3)}50%{transform:scale(1.02);box-shadow:0 0 0 15px rgba(59,130,246,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(59,130,246,0)}}
+.pulsing{animation:pulse-timer 1s infinite ease-in-out}
 
 .card{background:var(--surface);border-radius:28px;box-shadow:var(--card-shadow);padding:clamp(12px,2.4vw,22px)}
 .task{grid-area:task;position:relative;text-align:center;width:min(100%,540px)}
 .task-tools{position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2}
 .task-label{color:var(--muted);font-weight:800;font-size:clamp(14px,2.2vw,20px);padding:0 44px}
-.task-time{font-family:var(--font-h);font-weight:700;font-size:clamp(42px,9vw,84px);line-height:1.05;color:var(--blue)}
+.task-time{font-family:var(--font-h);font-weight:700;font-size:clamp(42px,9vw,84px);line-height:1.05;color:var(--blue);transition:filter 0.3s}
 .task-time small{font-size:.38em;color:var(--ink);margin-left:.2em}
 .task-words{
   display:inline-block;margin-top:.3em;background:var(--surface-2);border-radius:999px;
-  font-weight:800;font-size:clamp(16px,2.6vw,24px);padding:.25em .9em;
+  font-weight:800;font-size:clamp(16px,2.6vw,24px);padding:.25em .9em;transition:filter 0.3s;
 }
-.task-meta{margin-top:.6em;color:var(--muted);font-weight:800;font-size:clamp(13px,2vw,17px)}
+.task-meta{margin-top:.6em;color:var(--muted);font-weight:800;font-size:clamp(13px,2vw,17px);transition:filter 0.3s;}
 .task-meta b{color:var(--orange)}
 .actions{grid-area:actions;width:min(100%,540px);display:flex;flex-direction:column;align-items:center;gap:12px}
 .feedback{min-height:60px;width:100%;display:grid;place-items:center;text-align:center;font-family:var(--font-h);font-weight:600;font-size:clamp(16px,2.6vw,22px)}
@@ -210,12 +210,12 @@ button{font:inherit}
 .ans-btn.wrong{--c:#c3c9e4;--cd:#8f98c4;color:#5b6490;animation:wobble .4s}
 .ans-btn.right{--c:var(--green);--cd:var(--green-d);animation:pop .4s}
 
-.prog{display:flex;align-items:center;justify-content:center;gap:12px;flex:none;font-weight:800;color:var(--muted)}
+.prog{display:flex;align-items:center;justify-content:center;gap:12px;flex:none;font-weight:800;color:var(--muted);position:relative;z-index:10}
 .bar{flex:0 1 260px;height:14px;border-radius:99px;background:var(--surface);box-shadow:inset 0 2px 4px rgba(0,0,0,.12);overflow:hidden}
 .bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--yellow),var(--orange));transition:width .5s}
 .tgrid{
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,22px);
-  width:min(100%,calc((var(--vh) - 200px) * 1.9),1100px);margin:0 auto;
+  width:min(100%,calc((var(--vh) - 200px) * 1.9),1100px);margin:0 auto;position:relative;z-index:10;
 }
 @media (max-aspect-ratio:1/1){.tgrid{grid-template-columns:repeat(2,minmax(0,1fr));width:min(100%,calc((var(--vh) - 200px) * .72),560px)}}
 .tcard{position:relative;aspect-ratio:4/3;perspective:900px;cursor:pointer;container-type:inline-size}
@@ -238,10 +238,6 @@ button{font:inherit}
 .temoji{font-size:56px;font-size:clamp(34px,24cqw,90px);line-height:1.1}
 .tname{font-family:var(--font-h);font-weight:700;font-size:20px;font-size:clamp(16px,8.5cqw,30px)}
 .tdesc{font-weight:700;font-size:11px;font-size:clamp(10px,4.8cqw,15px);line-height:1.25;padding:0 6px;opacity:.85}
-.mini-btn{
-  position:absolute;right:8px;bottom:8px;width:34px;height:34px;border-radius:50%;border:0;cursor:pointer;
-  background:rgba(255,255,255,.85);font-size:16px;box-shadow:0 2px 0 rgba(0,0,0,.15);
-}
 .c-blue{--c:var(--blue);--cd:var(--blue-d);--tint:#dbeafe}
 .c-green{--c:var(--green);--cd:var(--green-d);--tint:#d9f7e5}
 .c-coral{--c:var(--coral);--cd:var(--coral-d);--tint:#ffe3df}
@@ -250,10 +246,10 @@ button{font:inherit}
 .c-purple{--c:var(--purple);--cd:var(--purple-d);--tint:#e7defe}
 .foot{display:flex;justify-content:center;flex:none}
 
-.mstats{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;flex:none}
+.mstats{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;flex:none;position:relative;z-index:10}
 .mgrid{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(8px,1.6vw,16px);
-  width:min(100%,calc((var(--vh) - 260px) * 1.28),900px);margin:0 auto;
+  width:min(100%,calc((var(--vh) - 260px) * 1.28),900px);margin:0 auto;position:relative;z-index:10;
 }
 @media (max-aspect-ratio:1/1){.mgrid{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,calc((var(--vh) - 260px) * .72),560px)}}
 .mcard{position:relative;aspect-ratio:1;perspective:800px;cursor:pointer}
@@ -313,6 +309,9 @@ button{font:inherit}
 .gcard.green{--c:var(--green);--cd:var(--green-d)}
 .gcard.purple{--c:var(--purple);--cd:var(--purple-d)}
 .gcard.orange{--c:var(--orange);--cd:var(--orange-d)}
+.gcard.pink{--c:var(--pink);--cd:var(--pink-d)}
+.gcard.coral{--c:var(--coral);--cd:var(--coral-d)}
+.gcard.yellow{--c:#f0ac00;--cd:var(--yellow-d)}
 
 .modal{
   position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;
@@ -334,6 +333,27 @@ button{font:inherit}
 }
 .toast.show{transform:translate(-50%,0);opacity:1}
 .confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+
+/* Explorer Sky Effect */
+.sky{position:absolute;inset:0;z-index:0;pointer-events:none;transition:background 1.4s ease;border-radius:0}
+.sky::after{
+  content:'';position:absolute;inset:0;pointer-events:none;transition:opacity 1.4s ease;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%,#fff,transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 18%,#fff,transparent 60%),
+    radial-gradient(2px 2px at 42% 55%,#fff,transparent 60%),
+    radial-gradient(1.6px 1.6px at 85% 42%,#fff,transparent 60%),
+    radial-gradient(2px 2px at 12% 74%,#fff,transparent 60%),
+    radial-gradient(1.6px 1.6px at 60% 84%,#fff,transparent 60%),
+    radial-gradient(2px 2px at 32% 12%,#fff,transparent 60%);
+  opacity:0;
+}
+.sky.night { background: linear-gradient(to bottom, #090a0f, #1e2657); }
+.sky.dawn  { background: linear-gradient(to bottom, #4a6583, #f5a87b); }
+.sky.day   { background: linear-gradient(to bottom, #87CEEB, #e0f6ff); }
+.sky.dusk  { background: linear-gradient(to bottom, #1e2657, #ff7e5f); }
+.sky.night::after, .sky.dusk::after { opacity:0.8; }
+.screen.explore > *:not(.sky) { position:relative; z-index:1; }
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -365,19 +385,8 @@ const state = {
   stars: store.get('uhr:stars', 0),
   muted: store.get('uhr:muted', false),
   level: store.get('uhr:level', 2),
-  mode: store.get('uhr:mode', '12'),
-  theme: store.get('uhr:theme', null)
-};
-
-// Globaler Indikator für den aktuellen Modus der angezeigten Uhr
-let currentIs24 = false;
-const is24 = () => currentIs24;
-const roll24 = () => { 
-  if (state.mode === 'mix') {
-    currentIs24 = Math.random() < 0.5;
-  } else {
-    currentIs24 = state.mode === '24';
-  }
+  theme: store.get('uhr:theme', null),
+  show24: store.get('uhr:show24', false)
 };
 
 const effectiveTheme = () => state.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -411,9 +420,6 @@ const sfx = {
   win()   { if (state.muted) return; [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, i * .11, .35, 'triangle', .14)); }
 };
 document.addEventListener('pointerdown', () => { if (!state.muted) audio(); }, { passive: true });
-
-function speak(text) {}
-const stopSpeak = () => {};
 
 const cv = document.createElement('canvas');
 cv.className = 'confetti'; cv.setAttribute('aria-hidden', 'true');
@@ -511,7 +517,7 @@ function germanTime(h, m) {
     default: return `${H === 'eins' ? 'ein' : H} Uhr ${numWord(m)}`;
   }
 }
-const digital = t => `${is24() ? pad(t.h) : t.h}:${pad(t.m)}`;
+const digital = t => `${pad(t.h)}:${pad(t.m)}`;
 function daypart(h) {
   if (h >= 22 || h < 6) return { name: 'Nacht',      emoji: '🌙',  at: 'nachts' };
   if (h < 10)           return { name: 'Morgen',     emoji: '🌅',  at: 'morgens' };
@@ -523,6 +529,13 @@ function daypart(h) {
 function formalTime(h, m) {
   const H = h === 1 ? 'ein' : numWord(h);
   return m === 0 ? `${H} Uhr` : `${H} Uhr ${numWord(m)}`;
+}
+function skyClass(h) {
+  if (h >= 22 || h < 5) return 'night';
+  if (h >= 5 && h < 8) return 'dawn';
+  if (h >= 8 && h < 18) return 'day';
+  if (h >= 18 && h < 22) return 'dusk';
+  return 'day';
 }
 
 const five = Array.from({ length: 12 }, (_, i) => i * 5);
@@ -537,13 +550,13 @@ const lvl = () => LEVELS[state.level - 1];
 const stepOf = () => state.level === 5 ? 1 : 5;
 function randTime(l, avoid = []) {
   let t, n = 0;
-  do { t = { h: is24() ? rand(24) : 1 + rand(12), m: l.mins ? pick(l.mins) : rand(60) }; n++; }
+  do { t = { h: rand(24), m: l.mins ? pick(l.mins) : rand(60) }; n++; }
   while (n < 40 && avoid.some(a => a && a.h === t.h && a.m === t.m));
   return t;
 }
 function makeOptions(t, l) {
   const okm = m => !l.mins || l.mins.includes(m);
-  const norm = h => is24() ? mod(h, 24) : ((h - 1 + 12) % 12) + 1;
+  const norm = h => mod(h, 24);
   const seen = new Set([t.h + ':' + t.m]), out = [];
   const add = (h, m) => {
     h = norm(h); m = mod(m, 60);
@@ -551,15 +564,14 @@ function makeOptions(t, l) {
     if (!okm(m) || seen.has(k)) return;
     seen.add(k); out.push({ h, m });
   };
-  if (is24()) add(t.h + 12, t.m);
+  add(t.h + 12, t.m);
   if (t.m % 5 === 0) add(t.m / 5 || 12, (t.h % 12) * 5);
   add(t.h + 1, t.m); add(t.h - 1, t.m);
   const alt = l.mins ? shuffle(l.mins) : shuffle([1, -1, 5, -5, 10, -10, 15, 30].map(d => t.m + d));
   alt.forEach(m => add(t.h, m));
   let guard = 0;
-  while (out.length < 4 && guard++ < 60) add(is24() ? rand(24) : 1 + rand(12), l.mins ? pick(l.mins) : rand(60));
-  if (is24()) return [out[0], pick(out.slice(1, 4))];
-  return shuffle(out.slice(0, 4)).slice(0, 2);
+  while (out.length < 4 && guard++ < 60) add(rand(24), l.mins ? pick(l.mins) : rand(60));
+  return [out[0], pick(out.slice(1, 4))];
 }
 
 const C = 130;
@@ -586,7 +598,7 @@ function clockSVG(o = {}) {
   let mnums = '';
   if (!mini) for (let i = 1; i <= 12; i++) { const [x, y] = pt(120, i * 30); mnums += `<text class="clk-mnum" x="${x}" y="${y}">${i * 5}</text>`; }
 
-  return `<svg class="clock${mini ? ' mini' : ''}" viewBox="0 0 260 260" role="img" aria-label="${label}">
+  return `<svg class="clock${mini ? ' mini' : ''}${state.show24 ? ' show24' : ''}" viewBox="0 0 260 260" role="img" aria-label="${label}">
   <circle class="clk-bezel" cx="130" cy="130" r="128"/>
   <circle class="clk-face" cx="130" cy="130" r="112"/>
   <g class="clk-mnums">${mnums}</g>
@@ -626,36 +638,27 @@ function setHands(svg, T, instant) {
 function setGhost(svg, T) { rot(svg, 'ghost-hour', T * .5); rot(svg, 'ghost-min', T * 6); }
 const unwrap = (prev, target) => prev + (mod(target - prev + 180, 360) - 180);
 
-function header(title) {
+function header(title, extraBtn = '') {
   return `<header class="topbar">
     <button class="btn btn-ghost btn-sm" data-act="back" aria-label="Zurück zum Menü"><span aria-hidden="true">←</span><span class="hide-sm">Zurück</span></button>
     <h1 class="topbar-title">${title}</h1>
     <div class="topbar-right">
       <span class="pill" title="Deine Sterne"><span aria-hidden="true">⭐</span><b class="js-stars">${state.stars}</b></span>
+      ${extraBtn}
+      <button class="icon-btn js-help24" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
       <button class="icon-btn js-mute"></button>
     </div>
   </header>`;
 }
 function levelChips() {
-  const modes = [
-    { id: '12', label: '12 h' },
-    { id: '24', label: '24 h' },
-    { id: 'mix', label: 'Mix' }
-  ].map(m => `<button class="chip mode ${state.mode === m.id ? 'on' : ''}" data-mode="${m.id}" aria-pressed="${state.mode === m.id}">${m.label}</button>`).join('');
-  
-  return `<div class="levels" role="group" aria-label="Einstellungen">${modes}<span class="sep"></span>${LEVELS.map(l =>
+  return `<div class="levels" role="group" aria-label="Einstellungen">${LEVELS.map(l =>
     `<button class="chip ${l.id === state.level ? 'on' : ''}" data-level="${l.id}" title="${l.name}" aria-pressed="${l.id === state.level}"><b>${l.id}</b><span>${l.short}</span></button>`).join('')}</div>`;
 }
 function bindLevels(root, cb) {
   $$('[data-level]', root).forEach(b => b.onclick = () => {
     state.level = +b.dataset.level; store.set('uhr:level', state.level);
     $$('[data-level]', root).forEach(x => { const on = +x.dataset.level === state.level; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
-    cb();
-  });
-  $$('[data-mode]', root).forEach(b => b.onclick = () => {
-    state.mode = b.dataset.mode; store.set('uhr:mode', state.mode);
-    $$('[data-mode]', root).forEach(x => { const on = x.dataset.mode === state.mode; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
-    cb();
+    if(cb) cb();
   });
 }
 function bindMute(root) {
@@ -664,9 +667,21 @@ function bindMute(root) {
   upd();
   mute.onclick = () => { state.muted = !state.muted; store.set('uhr:muted', state.muted); upd(); if (!state.muted) sfx.flip(); };
 }
+function bindHelp24(root) {
+  const btn = $('.js-help24', root); if (!btn) return;
+  const upd = () => {
+    const on = state.show24;
+    btn.style.background = on ? 'var(--purple)' : 'var(--surface)';
+    btn.style.color = on ? '#fff' : 'var(--ink)';
+    $$('.clock').forEach(c => c.classList.toggle('show24', on));
+  };
+  upd();
+  btn.onclick = () => { state.show24 = !state.show24; store.set('uhr:show24', state.show24); upd(); };
+}
 function bindChrome(root) {
   const back = $('[data-act=back]', root); if (back) back.onclick = () => go('home');
   bindMute(root);
+  bindHelp24(root);
 }
 
 const app = $('#app');
@@ -674,7 +689,6 @@ const screens = {};
 let cleanup = null;
 function go(name) {
   if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
-  stopSpeak();
   $$('.modal').forEach(m => m.remove());
   const s = document.createElement('section');
   s.className = 'screen';
@@ -683,11 +697,15 @@ function go(name) {
 }
 
 const GAMES = [
-  { id: 'types',  icon: '🃏', title: 'Welche Uhren gibt es?', sub: 'Karten aufdecken',   c: 'blue' },
-  { id: 'set',    icon: '⏰', title: 'Stell die Uhr ein',     sub: 'Zeiger ziehen',      c: 'green' },
-  { id: 'read',   icon: '👀', title: 'Wie spät ist es?',      sub: 'Uhrzeit ablesen',    c: 'purple' },
-  { id: 'memory', icon: '🧩', title: 'Uhren-Memory',          sub: 'Finde die Paare',    c: 'orange' }
+  { id: 'types',    icon: '🃏', title: 'Welche Uhren?', sub: 'Karten aufdecken',   c: 'yellow' },
+  { id: 'set',      icon: '⏰', title: 'Stell die Uhr ein', sub: 'Zeiger ziehen',      c: 'green' },
+  { id: 'read',     icon: '👀', title: 'Wie spät ist es?',  sub: 'Uhrzeit ablesen',    c: 'purple' },
+  { id: 'memory',   icon: '🧩', title: 'Uhren-Memory',      sub: 'Finde die Paare',    c: 'orange' },
+  { id: 'timer',    icon: '⏱️', title: 'Zeitgefühl',       sub: 'Sekunden schätzen',  c: 'pink' },
+  { id: 'set_rush', icon: '🔥', title: 'Tempo-Runde',       sub: 'Uhren auf Zeit',     c: 'coral' },
+  { id: 'explore',  icon: '🔭', title: 'Entdecker-Uhr',     sub: 'Freies Drehen',      c: 'blue' }
 ];
+
 screens.home = root => {
   const r = rankOf(state.stars), nx = nextRank(state.stars);
   const pct = nx ? Math.round((state.stars - r.n) / (nx.n - r.n) * 100) : 100;
@@ -696,6 +714,7 @@ screens.home = root => {
     <span class="pill"><span aria-hidden="true">🏅</span>${r.t}</span>
     <div class="topbar-right">
       <span class="pill" title="Deine Sterne"><span aria-hidden="true">⭐</span><b class="js-stars">${state.stars}</b></span>
+      <button class="icon-btn js-help24" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
       <button class="icon-btn js-theme"></button>
       <button class="icon-btn js-mute"></button>
     </div>
@@ -724,7 +743,7 @@ screens.home = root => {
     <button id="resetStars" style="background:none;border:none;color:var(--muted);font-size:12px;opacity:.6;cursor:pointer;text-decoration:underline;padding:8px">Sterne zurücksetzen</button>
   </div>`;
 
-  bindMute(root);
+  bindChrome(root);
   const th = $('.js-theme', root);
   const updTheme = () => { const d = effectiveTheme() === 'dark'; th.textContent = d ? '☀️' : '🌙'; th.setAttribute('aria-label', d ? 'Heller Modus' : 'Dunkler Modus'); };
   updTheme();
@@ -734,7 +753,7 @@ screens.home = root => {
   $('#resetStars', root).onclick = () => {
     modal(`<h2>Neu anfangen?</h2><p>Möchtest du wirklich alle gesammelten Sterne und deinen Rang löschen?</p>
       <div class="row">
-        <button class="btn" style="--c:var(--coral);--cd:var(--coral-d)" data-m="yes">Ja, löschen</button>
+        <button class="btn btn-coral" data-m="yes">Ja, löschen</button>
         <button class="btn btn-ghost" data-m="no">Abbrechen</button>
       </div>`,
       {
@@ -769,15 +788,15 @@ screens.home = root => {
   return () => clearInterval(iv);
 };
 
-const CLOCKS = [
-  { name: 'Wanduhr',      emoji: '🕰️', c: 'blue',   desc: 'Hängt oft im Klassenzimmer oder zu Hause an der Wand.' },
-  { name: 'Armbanduhr',   emoji: '⌚', c: 'green',  desc: 'Trägt man am Handgelenk, um immer die Zeit zu wissen.' },
-  { name: 'Wecker',       emoji: '⏰', c: 'coral',  desc: 'Weckt dich morgens rechtzeitig auf.' },
-  { name: 'Sanduhr',      emoji: '⏳', c: 'yellow', desc: 'Der Sand rieselt langsam von oben nach unten.' },
-  { name: 'Stoppuhr',     emoji: '⏱️', c: 'pink',   desc: 'Misst, wie schnell jemand beim Sport ist.' },
-  { name: 'Digitale Uhr', emoji: '📱', c: 'purple', desc: 'Zeigt die Zeit mit Zahlen an, wie auf dem Handy.' }
-];
 screens.types = root => {
+  const CLOCKS = [
+    { name: 'Wanduhr',      emoji: '🕰️', c: 'blue',   desc: 'Hängt oft im Klassenzimmer oder zu Hause an der Wand.' },
+    { name: 'Armbanduhr',   emoji: '⌚', c: 'green',  desc: 'Trägt man am Handgelenk, um immer die Zeit zu wissen.' },
+    { name: 'Wecker',       emoji: '⏰', c: 'coral',  desc: 'Weckt dich morgens rechtzeitig auf.' },
+    { name: 'Sanduhr',      emoji: '⏳', c: 'yellow', desc: 'Der Sand rieselt langsam von oben nach unten.' },
+    { name: 'Stoppuhr',     emoji: '⏱️', c: 'pink',   desc: 'Misst, wie schnell jemand beim Sport ist.' },
+    { name: 'Digitale Uhr', emoji: '📱', c: 'purple', desc: 'Zeigt die Zeit mit Zahlen an, wie auf dem Handy.' }
+  ];
   root.innerHTML = header('Welche Uhren gibt es?') + `
     <div class="prog"><div class="bar"><i id="pbar"></i></div><span id="ptxt">0 von 6 entdeckt</span></div>
     <main class="tgrid" id="tgrid">${CLOCKS.map((c, i) => `
@@ -857,15 +876,13 @@ screens.set = root => {
   const tgtT = () => (target.h % 12) * 60 + target.m;
 
   function newTask() {
-    roll24();
     target = randTime(lvl(), [prev, { h: 6, m: 0 }, { h: 18, m: 0 }]); prev = target;
     attempts = 0; hinted = false; locked = false; doneBtn.disabled = false;
     stage.classList.remove('ok'); svg.classList.remove('show-ghost'); svg.classList.add('idle');
-    svg.classList.toggle('show24', is24());
     setFb('');
     T = 360; setHands(svg, T, true); setGhost(svg, tgtT());
     $('#tt', root).innerHTML = `${digital(target)}<small>Uhr</small>`;
-    $('#tw', root).textContent = is24() ? `${daypart(target.h).emoji} ${formalTime(target.h, target.m)}` : germanTime(target.h, target.m);
+    $('#tw', root).textContent = `${daypart(target.h).emoji} ${formalTime(target.h, target.m)}`;
   }
 
   let active = null;
@@ -911,9 +928,9 @@ screens.set = root => {
       locked = true; doneBtn.disabled = true;
       sfx.ok(); confetti(110); stage.classList.add('ok');
       streak++; setStreak(); addStars(1);
-      const extra = is24() ? `<br><small>${digital(target)} Uhr = ${germanTime(target.h, target.m)} ${daypart(target.h).at}</small>` : '';
+      const extra = `<br><small>${digital(target)} Uhr = ${germanTime(target.h, target.m)} ${daypart(target.h).at}</small>`;
       setFb('Richtig! Super gemacht! ⭐ +1' + extra, 'good');
-      later(newTask, is24() ? 3400 : 1900);
+      later(newTask, 3400);
     } else {
       attempts++; sfx.no(); streak = 0; setStreak();
       const minBad = mod(T, 60) !== target.m;
@@ -922,7 +939,7 @@ screens.set = root => {
       if (minBad && hourBad) msg = 'Noch nicht ganz. Der kleine Zeiger zeigt die Stunde, der große die Minuten.';
       else if (minBad)       msg = 'Die Stunde stimmt! 👍 Schau noch einmal auf den großen Zeiger (Minuten).';
       else                   msg = 'Die Minuten stimmen! 👍 Schau noch einmal auf den kleinen Zeiger (Stunde).';
-      if (hourBad && is24() && target.h >= 13) msg += ' Tipp: Ab 13 Uhr ziehst du 12 ab.';
+      if (hourBad && target.h >= 13) msg += ' Tipp: Ab 13 Uhr ziehst du 12 ab.';
       if (attempts >= 2) { msg += ' Ich zeige dir die Lösung gestrichelt.'; showHint(); }
       setFb(msg, 'bad');
     }
@@ -932,16 +949,148 @@ screens.set = root => {
   return () => timers.forEach(clearTimeout);
 };
 
+screens.set_rush = root => {
+  root.innerHTML = header('Tempo-Runde') + levelChips() + `
+  <main class="play">
+    <!-- START SCREEN -->
+    <div class="card task" id="rushStart" style="grid-row:1/3; margin:auto">
+      <div class="task-label">Wie viele Uhren erkennst du?</div>
+      <div style="margin:20px 0; font-size:40px; line-height:1">⏳</div>
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-blue js-rush-start" data-t="30">30 Sekunden</button>
+        <button class="btn btn-blue js-rush-start" data-t="60">60 Sekunden</button>
+      </div>
+    </div>
+    
+    <!-- GAME SCREEN -->
+    <div class="card task" id="rushTask" hidden>
+      <div class="task-label">Welche Uhrzeit ist das?</div>
+      <div class="prog" style="margin-top:10px">
+        <span id="timeLeft" style="color:var(--coral); font-size:20px; font-family:var(--font-h)">60s</span>
+        <div class="bar" style="flex:1"><i id="timeBar" style="background:var(--coral); transition:width 0.1s linear"></i></div>
+        <span title="Punkte">🎯 <b id="score">0</b></span>
+      </div>
+    </div>
+    <div class="stage" id="stage" hidden><div class="clock-wrap" id="cw"></div></div>
+    <div class="actions" id="rushActions" hidden>
+      <div class="answers" id="ans" style="grid-template-columns:repeat(2,1fr); width:100%"></div>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const cw = $('#cw', root), stage = $('#stage', root), ans = $('#ans', root);
+  const startScreen = $('#rushStart', root), taskScreen = $('#rushTask', root), actionsScreen = $('#rushActions', root);
+  cw.innerHTML = clockSVG({ label: 'Lies die Uhrzeit ab' });
+  const svg = $('svg', cw);
+
+  const COL = ['btn-blue', 'btn-purple', 'btn-pink', 'btn-green'];
+  let target = null, prev = null, score = 0, timeTotal = 60;
+  let gameEnd = 0, timerIv = null, locked = false, opts = [];
+  
+  function newTask() {
+    target = randTime(lvl(), [prev]); prev = target;
+    locked = false;
+    stage.classList.remove('ok');
+    
+    // Generiere 4 Antwortmöglichkeiten (1 richtige, 3 falsche)
+    // Entferne direkt optisch identische Zeiten (z.B. 06:30 und 18:30)
+    let falsies = makeOptions(target, lvl()).filter(f => (f.h % 12 !== target.h % 12) || (f.m !== target.m));
+    
+    let guard = 0;
+    while(falsies.length < 3 && guard < 100) {
+       guard++;
+       let cand = randTime(lvl());
+       
+       // Verhindere optisch identische Uhrzeiten wie die richtige Antwort (z.B. 18:30 bei 06:30 Ziel)
+       if (cand.h % 12 === target.h % 12 && cand.m === target.m) continue;
+       
+       // Verhindere Duplikate und optisch identische Zeiten unter den falschen Antworten selbst
+       if (falsies.some(f => f.h % 12 === cand.h % 12 && f.m === cand.m)) continue;
+       
+       falsies.push(cand);
+    }
+    opts = shuffle([target, ...falsies.slice(0, 3)]);
+    
+    ans.innerHTML = opts.map((o, i) => `<button class="btn ans-btn ${COL[i]}" data-i="${i}">${digital(o)}</button>`).join('');
+    setHands(svg, (target.h % 12) * 60 + target.m, true);
+  }
+
+  $$('.js-rush-start', root).forEach(btn => btn.onclick = () => {
+    timeTotal = +btn.dataset.t;
+    startScreen.hidden = true;
+    taskScreen.hidden = false;
+    stage.hidden = false;
+    actionsScreen.hidden = false;
+    score = 0; $('#score', root).textContent = 0;
+    gameEnd = Date.now() + (timeTotal * 1000);
+    
+    timerIv = setInterval(updateTimer, 50);
+    newTask();
+  });
+
+  function updateTimer() {
+    const left = Math.max(0, gameEnd - Date.now());
+    $('#timeLeft', root).textContent = Math.ceil(left/1000) + 's';
+    $('#timeBar', root).style.width = (left / (timeTotal*1000) * 100) + '%';
+    
+    if (left <= 0) {
+      clearInterval(timerIv);
+      endGame();
+    }
+  }
+
+  function endGame() {
+    locked = true;
+    const earned = Math.floor(score / 3); // 1 Stern pro 3 richtige Antworten
+    if(earned > 0) addStars(earned);
+    sfx.win();
+    if(earned > 0) confetti(150);
+    
+    modal(`<div class="big">⏱️</div><h2>Zeit abgelaufen!</h2><p>Du hast ${score} Uhren richtig erkannt.</p>${earned > 0 ? `<p>Dafür bekommst du ${earned} ⭐!</p>` : ''}
+      <div class="row">
+        <button class="btn btn-blue" data-m="again">Nochmal spielen</button>
+        <button class="btn btn-ghost" data-m="home">Menü</button>
+      </div>`,
+      {
+        again: () => {
+          startScreen.hidden = false;
+          taskScreen.hidden = true; stage.hidden = true; actionsScreen.hidden = true;
+        },
+        home: () => go('home')
+      }
+    );
+  }
+
+  ans.addEventListener('click', e => {
+    const b = e.target.closest('.ans-btn'); if (!b || locked || b.disabled) return;
+    const o = opts[+b.dataset.i];
+    if (o.h === target.h && o.m === target.m) {
+      locked = true; sfx.ok(); stage.classList.add('ok');
+      $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
+      b.classList.add('right');
+      score++; $('#score', root).textContent = score;
+      setTimeout(newTask, 400); // Sofortige nächste Frage
+    } else {
+      sfx.no();
+      b.classList.add('wrong'); b.disabled = true; // Falschen Button ausgrauen/wackeln
+    }
+  });
+
+  bindLevels(root, () => {
+    if(!startScreen.hidden) return; // Noch nicht gestartet
+    newTask(); // Uhr sofort anpassen, wenn Level gewechselt wird
+  });
+  
+  return () => { clearInterval(timerIv); };
+};
+
 screens.read = root => {
   root.innerHTML = header('Wie spät ist es?') + levelChips() + `
   <main class="play read">
     <div class="stage" id="stage"><div class="clock-wrap" id="cw"></div></div>
     <div class="card task">
-      <div class="task-tools">
-        <button class="icon-btn sm" id="ringBtn" aria-label="13-24 Ring anzeigen" title="Zeige 13-24 Uhr" hidden>13</button>
-      </div>
-      <div class="task-label" id="lab">Welche Uhrzeit zeigt die Uhr?</div>
-      <div class="task-words" id="dp" hidden></div>
+      <div class="task-label" id="lab">Welche Uhrzeit ist es? (24-Stunden-Schreibweise)</div>
+      <div class="task-words" id="dp"></div>
       <div class="answers" id="ans"></div>
       <div class="task-meta">🔥 Serie: <b id="streak">0</b></div>
     </div>
@@ -955,14 +1104,8 @@ screens.read = root => {
   const cw = $('#cw', root), stage = $('#stage', root), fb = $('#fb', root), ans = $('#ans', root), next = $('#next', root);
   cw.innerHTML = clockSVG({ label: 'Lies die Uhrzeit ab' });
   const svg = $('svg', cw);
-  const ringBtn = $('#ringBtn', root);
-  
-  ringBtn.onclick = () => {
-    svg.classList.toggle('show24');
-  };
 
   const COL = ['btn-blue', 'btn-purple', 'btn-pink'];
-  const WRONG = ['Nicht ganz. Schau noch einmal genau hin!', 'Fast! Der kleine Zeiger zeigt die Stunde.', 'Probier es noch einmal! Der große Zeiger zeigt die Minuten.'];
   const WRONG24 = ['Nicht ganz. Schau auch auf die Tageszeit!', 'Tipp: Ab 13 Uhr zählt man weiter: 13, 14, 15 … bis 24.', 'Probier es noch einmal! Nachmittags und abends rechnest du 12 dazu.'];
   let t = null, prev = null, opts = [], tries = 0, locked = false, streak = 0, auto = 0;
   const timers = [];
@@ -971,20 +1114,11 @@ screens.read = root => {
 
   function newTask() {
     clearTimeout(auto);
-    roll24(); // Bestimmt per Zufall, ob diese Aufgabe 24h ist (wenn Mix-Modus)
-    
     t = randTime(lvl(), [prev]); prev = t; tries = 0; locked = false;
     opts = shuffle([t, ...makeOptions(t, lvl())]);
-    
-    // Ring standardmäßig ausblenden (nicht dauerhaft)
-    svg.classList.remove('show24'); 
-    
-    // Ring-Schalter nur anzeigen, wenn es eine 24-Stunden-Aufgabe ist
-    ringBtn.hidden = !is24();
 
     const dpEl = $('#dp', root), d = daypart(t.h);
-    dpEl.hidden = !is24(); dpEl.textContent = `${d.emoji} Es ist ${d.name}`;
-    $('#lab', root).textContent = is24() ? 'Welche Uhrzeit ist es? (24-Stunden-Schreibweise)' : 'Welche Uhrzeit zeigt die Uhr?';
+    dpEl.textContent = `${d.emoji} Es ist ${d.name}`;
     ans.innerHTML = opts.map((o, i) => `<button class="btn ans-btn ${COL[i]}" data-i="${i}">${digital(o)}</button>`).join('');
     next.hidden = true; setFb(''); stage.classList.remove('ok');
     setHands(svg, (t.h % 12) * 60 + t.m, true);
@@ -994,20 +1128,19 @@ screens.read = root => {
     const b = e.target.closest('.ans-btn'); if (!b || locked || b.disabled) return;
     const o = opts[+b.dataset.i];
     if (o.h === t.h && o.m === t.m) {
-      locked = true; sfx.ok(); confetti(100); stage.classList.add('ok');
+      locked = true; sfx.ok(); stage.classList.add('ok'); // Feuerwerk entfernt, leuchtet nur grün
       $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
       b.classList.add('right');
-      const words = germanTime(t.h, t.m) + (is24() ? ' ' + daypart(t.h).at : ''), first = tries === 0;
+      const words = germanTime(t.h, t.m) + ' ' + daypart(t.h).at, first = tries === 0;
       if (first) { streak++; addStars(1); }
       setStreak();
       setFb(`Richtig! ${digital(t)} Uhr ist „${words}“.${first ? ' ⭐ +1' : ''}`, 'good');
       next.hidden = false;
-      auto = setTimeout(newTask, 4200); timers.push(auto);
+      auto = setTimeout(newTask, 3200); timers.push(auto);
     } else {
       tries++; sfx.no(); streak = 0; setStreak();
       b.classList.add('wrong'); b.disabled = true;
-      const msgs = is24() ? WRONG24 : WRONG;
-      setFb(msgs[Math.min(tries - 1, msgs.length - 1)], 'bad');
+      setFb(WRONG24[Math.min(tries - 1, WRONG24.length - 1)], 'bad');
     }
   });
   next.onclick = newTask;
@@ -1032,12 +1165,9 @@ screens.memory = root => {
   function deal() {
     moves = 0; pairs = 0; open = []; lock = false;
     $('#mv', root).textContent = 0; $('#pr', root).textContent = 0;
-    roll24();
     
     const l = lvl();
-    const hours = is24()
-      ? shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]).slice(0, 6).map(h => h + (Math.random() < .5 ? 12 : 0))
-      : shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]).slice(0, 6);
+    const hours = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]).slice(0, 6).map(h => h + (Math.random() < .5 ? 12 : 0));
     const times = hours.map(h => ({ h, m: l.mins ? pick(l.mins) : rand(60) }));
     cards = shuffle(times.flatMap(t => [{ t, k: 'a' }, { t, k: 'd' }]));
     grid.innerHTML = cards.map((c, i) => `
@@ -1045,7 +1175,7 @@ screens.memory = root => {
         <div class="mcard-in">
           <div class="mface mback" aria-hidden="true">🕐</div>
           <div class="mface mfront">${c.k === 'a'
-            ? clockSVG({ mini: true, T: (c.t.h % 12) * 60 + c.t.m, label: `Uhr: ${germanTime(c.t.h, c.t.m)}` }) + (is24() ? `<span class="dp" aria-hidden="true">${daypart(c.t.h).emoji}</span>` : '')
+            ? clockSVG({ mini: true, T: (c.t.h % 12) * 60 + c.t.m, label: `Uhr: ${germanTime(c.t.h, c.t.m)}` }) + `<span class="dp" aria-hidden="true">${daypart(c.t.h).emoji}</span>`
             : `<span class="mdigital">${digital(c.t)}</span>`}</div>
         </div>
       </div>`).join('');
@@ -1081,6 +1211,220 @@ screens.memory = root => {
   bindLevels(root, deal);
   deal();
   return () => timers.forEach(clearTimeout);
+};
+
+screens.timer = root => {
+  root.innerHTML = header('Zeitgefühl') + `
+  <main class="play">
+    <div class="card task">
+      <div class="task-label">Wähle eine Zeit und drücke Start</div>
+      <div style="margin:12px 0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap">
+        <button class="btn btn-ghost ans-btn js-preset" data-s="5">5s</button>
+        <button class="btn btn-blue ans-btn js-preset" data-s="10">10s</button>
+        <button class="btn btn-ghost ans-btn js-preset" data-s="15">15s</button>
+        <button class="btn btn-ghost ans-btn js-preset" data-s="20">20s</button>
+      </div>
+      <div style="margin:16px 0 8px; display:flex; gap:12px; align-items:center; justify-content:center; padding:0 10px;">
+        <input type="range" id="timeSlider" min="1" max="60" value="10" style="flex:1; max-width:260px; accent-color:var(--blue);">
+        <span id="sliderVal" style="font-weight:800; font-family:var(--font-h); font-size:22px; width:45px; text-align:right; color:var(--blue)">10s</span>
+      </div>
+    </div>
+    <div class="stage" id="stage">
+      <div class="clock-wrap" id="timerVisual" style="display:grid;place-items:center;background:var(--surface);border-radius:50%;font-size:clamp(50px,10vw,100px);font-family:var(--font-h);color:var(--ink);box-shadow:var(--card-shadow);transition:background 0.3s">
+        <span id="displayVal" style="color:var(--blue)">10s</span>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="feedback" id="fb" aria-live="polite"></div>
+      <button class="btn btn-green btn-big" id="actionBtn">Start</button>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const slider = $('#timeSlider', root);
+  const sliderVal = $('#sliderVal', root);
+  const displayVal = $('#displayVal', root);
+  const actionBtn = $('#actionBtn', root);
+  const timerVisual = $('#timerVisual', root);
+  const fb = $('#fb', root);
+
+  let targetSec = 10;
+  let startTime = 0;
+  let running = false;
+  let displayInterval;
+
+  const setTime = (s) => {
+    if(running) return;
+    targetSec = s;
+    slider.value = s;
+    sliderVal.textContent = s + 's';
+    displayVal.textContent = s + 's';
+    $$('.js-preset', root).forEach(b => {
+      b.classList.toggle('btn-blue', +b.dataset.s === s);
+      b.classList.toggle('btn-ghost', +b.dataset.s !== s);
+    });
+  };
+
+  slider.oninput = () => setTime(+slider.value);
+  $$('.js-preset', root).forEach(b => b.onclick = () => setTime(+b.dataset.s));
+
+  actionBtn.onclick = () => {
+    if (!running) {
+      running = true;
+      startTime = Date.now();
+      slider.disabled = true;
+      $$('.js-preset', root).forEach(b => b.disabled = true);
+      
+      actionBtn.textContent = "Stopp!";
+      actionBtn.className = "btn btn-coral btn-big";
+      displayVal.textContent = "🙈";
+      fb.innerHTML = "";
+      timerVisual.classList.add('pulsing');
+      
+    } else {
+      running = false;
+      const elapsed = (Date.now() - startTime) / 1000;
+      const diff = Math.abs(elapsed - targetSec);
+      
+      slider.disabled = false;
+      $$('.js-preset', root).forEach(b => b.disabled = false);
+      
+      actionBtn.textContent = "Nochmal";
+      actionBtn.className = "btn btn-blue btn-big";
+      displayVal.textContent = elapsed.toFixed(1) + "s";
+      timerVisual.classList.remove('pulsing');
+
+      let msg = "";
+      let cls = "good";
+      if (diff <= 1.0) {
+        msg = "Wow, punktgenau! Fantastisches Zeitgefühl! ⭐ +2";
+        addStars(2); sfx.win(); confetti(100);
+      } else if (diff <= 3.0) {
+        msg = "Sehr nah dran! Super gemacht! ⭐ +1";
+        addStars(1); sfx.ok(); confetti(50);
+      } else {
+        msg = "Guter Versuch! Das übt sich mit der Zeit. Probier es gleich nochmal!";
+        cls = "fb";
+        sfx.flip();
+      }
+      fb.innerHTML = `<div class="fb ${cls}">Ziel: ${targetSec}s &nbsp;•&nbsp; Deine Zeit: ${elapsed.toFixed(1)}s<br>${msg}</div>`;
+    }
+  };
+
+  return () => clearInterval(displayInterval);
+};
+
+screens.explore = root => {
+  root.innerHTML = `<div class="sky" id="sky" aria-hidden="true"></div>
+  <header class="topbar">
+    <button class="btn btn-ghost btn-sm" data-act="back" aria-label="Zurück zum Menü"><span aria-hidden="true">←</span><span class="hide-sm">Zurück</span></button>
+    <h1 class="topbar-title">Entdecker-Uhr</h1>
+    <div class="topbar-right">
+      <span class="pill"><span aria-hidden="true">⭐</span><b class="js-stars">${state.stars}</b></span>
+      <button class="icon-btn js-help24" title="24-Stunden-Hilfe" aria-label="24-Stunden-Zahlen ein/ausblenden"><span aria-hidden="true" style="font-size:14px;font-weight:800;font-family:var(--font-h)">24h</span></button>
+      <button class="icon-btn js-mute"></button>
+    </div>
+  </header>
+  <main class="play">
+    <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)">
+      <div class="task-tools">
+        <button class="icon-btn sm js-master" title="Antwort verbergen (für Spielleitung)">👀</button>
+      </div>
+      <div class="task-label">Drehe die Zeiger, wie du magst</div>
+      <div class="task-time" id="tt"></div>
+      <div class="task-words" id="tw"></div>
+      <div class="task-meta" id="meta"></div>
+    </div>
+    <div class="stage"><div class="clock-wrap" id="cw" style="background:var(--face)"></div></div>
+    <div class="actions">
+      <div class="feedback" id="fb" aria-live="polite"></div>
+    </div>
+  </main>`;
+  root.classList.add('explore');
+  bindChrome(root);
+
+  let masterHide = false;
+  $('.js-master', root).onclick = function() {
+    masterHide = !masterHide;
+    this.textContent = masterHide ? '🙈' : '👀';
+    const filt = masterHide ? 'blur(10px) opacity(0.3)' : 'none';
+    $('#tw', root).style.filter = filt;
+    $('#tt', root).style.filter = filt;
+    $('#meta', root).style.filter = filt;
+  };
+
+  const skyEl = $('#sky', root);
+  const cw = $('#cw', root);
+  cw.innerHTML = clockSVG({ knobs: true, hit: true, T: 0, label: 'Freie Uhr – ziehe die Zeiger' });
+  const svg = $('svg', cw);
+
+  // Starte mit der aktuellen echten Uhrzeit
+  const now = new Date();
+  let T = now.getHours() * 60 + now.getMinutes(); 
+  
+  let active = null;
+
+  function applySky() {
+    const h = Math.floor(mod(T, 1440) / 60);
+    const cls = skyClass(h);
+    skyEl.className = 'sky ' + cls;
+  }
+  
+  function updateText() {
+    const hh = Math.floor(mod(T, 1440) / 60);
+    const mm = mod(Math.round(T), 60);
+    $('#tt', root).innerHTML = `${pad(hh)}:${pad(mm)}<small>Uhr</small>`;
+    const d = daypart(hh);
+    $('#tw', root).textContent = `${d.emoji} ${germanTime(hh, mm)} ${d.at}`;
+    $('#meta', root).innerHTML = `Stunde: <b>${pad(hh)}</b> · Minute: <b>${pad(mm)}</b>`;
+  }
+
+  const angleFrom = e => {
+    const r = svg.getBoundingClientRect();
+    return mod(Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI, 360);
+  };
+  
+  svg.addEventListener('pointerdown', e => {
+    const h = e.target.closest('[data-hit]'); if (!h) return;
+    e.preventDefault(); active = h.dataset.hit;
+    try { svg.setPointerCapture(e.pointerId); } catch (_) {}
+    svg.classList.remove('idle'); svg.classList.add('dragging');
+  });
+  
+  svg.addEventListener('pointermove', e => {
+    if (!active) return;
+    const deg = angleFrom(e); let nT = T;
+    
+    if (active === 'min') {
+      const m = mod(Math.round(deg / 6), 60); // 1-Minuten Schritte
+      let d = m - mod(T, 60); 
+      if (d > 30) d -= 60; if (d < -30) d += 60;
+      nT = T + d;
+    } else {
+      const m = mod(T, 60);
+      const targetH12 = mod(Math.round((deg - m * .5) / 30), 12);
+      const currentH12 = Math.floor(mod(T, 720) / 60);
+      let dH = targetH12 - currentH12;
+      if (dH > 6) dH -= 12;
+      if (dH < -6) dH += 12;
+      nT = T + dH * 60;
+    }
+    if (nT !== T) { 
+      T = nT; 
+      setHands(svg, T); 
+      sfx.tick(); 
+      applySky(); 
+      updateText(); 
+    }
+  });
+  
+  const end = () => { active = null; svg.classList.remove('dragging'); };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+
+  setHands(svg, T, true);
+  applySky(); updateText();
+  return () => {};
 };
 
 applyTheme();
