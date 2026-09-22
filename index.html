@@ -186,7 +186,6 @@ button{font:inherit}
 }
 @keyframes okpulse{0%{box-shadow:0 0 0 0 rgba(24,169,87,.7)}100%{box-shadow:0 0 0 46px rgba(24,169,87,0)}}
 @keyframes pulse-timer {0%{transform:scale(1);box-shadow:0 0 0 0 rgba(59,130,246,0.3)}50%{transform:scale(1.02);box-shadow:0 0 0 15px rgba(59,130,246,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(59,130,246,0)}}
-.pulsing{animation:pulse-timer 1s infinite ease-in-out}
 
 .card{background:var(--surface);border-radius:28px;box-shadow:var(--card-shadow);padding:clamp(12px,2.4vw,22px)}
 .task{grid-area:task;position:relative;text-align:center;width:min(100%,540px)}
@@ -384,6 +383,33 @@ button{font:inherit}
 .mcard.done .mfront{box-shadow:0 5px 0 var(--green),0 0 0 4px var(--green)}
 .mcard.done{animation:pop .5s .45s}
 .mdigital{font-family:var(--font-h);font-weight:700;color:var(--clock-ink);font-size:clamp(24px,6vw,52px)}
+
+/* Smartboard & Duration */
+.sb-grid { display:grid; gap:20px; grid-template-columns:minmax(0,1fr); max-width:960px; margin:0 auto; width:100%; align-items:center; }
+@media (min-width:768px){ .sb-grid{grid-template-columns:1fr 1fr; gap:40px;} }
+.sb-controls { display:flex; flex-direction:column; gap:14px; width:100%; max-width:400px; margin:0 auto;}
+.sb-row { display:flex; gap:12px; }
+.btn-sb { display:inline-flex; align-items:center; justify-content:center; background:var(--surface); color:var(--ink); font-family:var(--font-b); font-weight:800; font-size:clamp(16px, 2vw, 20px); padding:clamp(10px, 1.5vw, 16px); flex:1; border:0; border-radius:16px; cursor:pointer; box-shadow:0 6px 0 var(--line), 0 10px 20px rgba(35,50,110,.08); transition:transform 0.1s, box-shadow 0.1s; }
+.btn-sb:active { transform:translateY(6px); box-shadow:0 0 0 var(--line); }
+.btn-sb.light { background:var(--surface-2); box-shadow:0 6px 0 var(--line), 0 10px 20px rgba(35,50,110,.05); }
+.btn-sb.light:active { transform:translateY(6px); box-shadow:0 0 0 var(--line); }
+.sb-digi { font-family:var(--font-h); font-size:clamp(50px,10vw,80px); line-height:1; font-weight:700; color:var(--ink); text-align:center; letter-spacing:2px; transition:opacity 0.3s;}
+
+.dur-wrap { display:flex; flex-direction:column; gap:20px; align-items:center; width:100%; max-width:960px; margin:0 auto; }
+@media (min-width:860px){ .dur-wrap { flex-direction:row; justify-content:center; align-items:stretch;} }
+.dur-col { flex:1; display:flex; flex-direction:column; align-items:center; background:var(--surface); border-radius:28px; padding:24px; box-shadow:var(--card-shadow); gap:20px; width:100%; max-width:340px;}
+.dur-mid { flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; width:100%; max-width:260px; }
+.dur-arrow { font-size:40px; color:var(--orange); font-weight:bold; }
+.dur-arrow.horiz { display:none; }
+.dur-arrow.vert { display:block; transform:rotate(90deg); margin:10px 0; }
+@media (min-width:860px) {
+  .dur-arrow.horiz { display:block; }
+  .dur-arrow.vert { display:none; }
+}
+.dur-box { background:var(--orange); color:#fff; border-radius:20px; padding:18px 10px; text-align:center; box-shadow:var(--card-shadow); width:100%; }
+.dur-box div { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; opacity:0.9; margin-bottom:4px;}
+.dur-box span { font-family:var(--font-h); font-size:36px; font-weight:700; line-height:1; white-space:nowrap;}
+.dur-time-box { padding:10px 24px; font-family:var(--font-h); font-size:36px; font-weight:700; color:var(--ink); background:var(--surface); border:2px solid var(--line); border-radius:16px; letter-spacing:2px;}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
@@ -761,7 +787,9 @@ const GAMES = [
   { id: 'memory',   icon: '🧩', title: 'Uhren-Memory',      sub: 'Finde die Paare',    c: 'orange' },
   { id: 'timer',    icon: '⏱️', title: 'Zeitgefühl',       sub: 'Sekunden schätzen',  c: 'pink' },
   { id: 'set_rush', icon: '🔥', title: 'Tempo-Runde',       sub: 'Uhren auf Zeit',     c: 'coral' },
-  { id: 'explore',  icon: '🔭', title: 'Entdecker-Uhr',     sub: 'Freies Drehen',      c: 'blue' }
+  { id: 'explore',  icon: '🔭', title: 'Entdecker-Uhr',     sub: 'Freies Drehen',      c: 'blue' },
+  { id: 'smartboard',icon:'🖥️',title: 'Smartboard',        sub: 'Gemeinsam üben',     c: 'purple' },
+  { id: 'duration', icon: '📏', title: 'Wie lange?',        sub: 'Zeitspanne berechnen',c: 'green' }
 ];
 
 screens.home = root => {
@@ -1250,13 +1278,13 @@ screens.day = root => {
   root.innerHTML = `<div class="sky" id="sky" aria-hidden="true"></div>` + header('Mein Tag') + `
   <main class="play read" style="position:relative; z-index:10">
     <div class="stage" id="stage"><div class="clock-wrap" id="cw" style="background:var(--face)"></div></div>
-    <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); position:relative; top:clamp(70px, 20vh, 200px)">
+    <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); position:relative; top:clamp(90px, 25vh, 240px)">
       <div class="task-label">Was passiert meistens um diese Zeit?</div>
       <div class="task-time" id="tt" style="font-size:clamp(32px,6vw,54px);margin:8px 0"></div>
       <div class="answers" id="ans" style="grid-template-columns:minmax(0,1fr);gap:8px"></div>
       <div class="task-meta">🔥 Serie: <b id="streak">0</b></div>
     </div>
-    <div class="actions" style="position:relative; top:clamp(70px, 20vh, 200px)">
+    <div class="actions" style="position:relative; top:clamp(90px, 25vh, 240px)">
       <div class="feedback" id="fb" aria-live="polite"></div>
     </div>
   </main>`;
@@ -1574,7 +1602,6 @@ screens.timer = root => {
   const sliderVal = $('#sliderVal', root);
   const displayVal = $('#displayVal', root);
   const actionBtn = $('#actionBtn', root);
-  const timerVisual = $('#timerVisual', root);
   const fb = $('#fb', root);
 
   let targetSec = 10;
@@ -1607,7 +1634,6 @@ screens.timer = root => {
       actionBtn.className = "btn btn-coral btn-big";
       displayVal.textContent = "🙈";
       fb.innerHTML = "";
-      timerVisual.classList.add('pulsing');
       
     } else {
       running = false;
@@ -1620,7 +1646,6 @@ screens.timer = root => {
       actionBtn.textContent = "Nochmal";
       actionBtn.className = "btn btn-blue btn-big";
       displayVal.textContent = elapsed.toFixed(1) + "s";
-      timerVisual.classList.remove('pulsing');
 
       let msg = "";
       let cls = "good";
@@ -1631,7 +1656,7 @@ screens.timer = root => {
         addStars(3); sfx.win(); confetti(150); $('#stage', root).classList.add('ok'); setTimeout(()=>$('#stage', root).classList.remove('ok'), 1000);
       } else if (diff <= 1.0) {
         msg = "Wow, super! Fantastisches Zeitgefühl! ⭐ +2";
-        addStars(2); sfx.ok(); $('#stage', root).classList.add('ok'); setTimeout(()=>$('#stage', root).classList.remove('ok'), 1000); // Green pulse instead of confetti
+        addStars(2); sfx.ok(); $('#stage', root).classList.add('ok'); setTimeout(()=>$('#stage', root).classList.remove('ok'), 1000); 
       } else if (diff <= 3.0) {
         msg = "Sehr nah dran! Super gemacht! ⭐ +1";
         addStars(1); sfx.ok();
@@ -1747,6 +1772,245 @@ screens.explore = root => {
 
   setHands(svg, T, true);
   applySky(); updateText();
+  return () => {};
+};
+
+screens.smartboard = root => {
+  root.innerHTML = header('Gemeinsam üben am Smartboard') + `
+  <main style="flex:1; display:flex; overflow-y:auto; padding:20px; width:100%; flex-direction:column;">
+    <div class="sb-grid" style="margin:auto; width:100%;">
+      <div style="display:flex; justify-content:center; width:100%;">
+        <div class="clock-wrap" id="cw" style="--cs:clamp(260px, 42vw, 540px); width:100%;"></div>
+      </div>
+      <div class="sb-controls">
+        <div class="card" style="text-align:center; padding:30px 20px; display:flex; flex-direction:column; gap:10px; align-items:center;">
+          <div class="sb-digi" id="digi">11:49</div>
+          <button class="btn btn-ghost btn-sm" id="toggleDigi" style="color:var(--orange)">Zeit abdecken (Raten)</button>
+        </div>
+        <div class="sb-row">
+          <button class="btn-sb light" data-add="-60">- 1 Std</button>
+          <button class="btn-sb light" data-add="60">+ 1 Std</button>
+        </div>
+        <div class="sb-row">
+          <button class="btn-sb light" data-add="-15">- 15 Min</button>
+          <button class="btn-sb light" data-add="15">+ 15 Min</button>
+        </div>
+        <div class="sb-row">
+          <button class="btn-sb light" data-add="-5">- 5 Min</button>
+          <button class="btn-sb light" data-add="5">+ 5 Min</button>
+        </div>
+        <div class="sb-row">
+          <button class="btn-sb light" style="opacity:0.8" data-add="-1">- 1 Min</button>
+          <button class="btn-sb light" style="opacity:0.8" data-add="1">+ 1 Min</button>
+        </div>
+        <button class="btn btn-coral btn-big" style="margin-top:10px; width:100%; border-radius:16px;" id="btnNow">Aktuelle echte Zeit</button>
+      </div>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const cw = $('#cw', root);
+  cw.innerHTML = clockSVG({ knobs: true, hit: true, T: 0, label: 'Smartboard Uhr' });
+  const svg = $('svg', cw);
+
+  let T = 11 * 60 + 49;
+  let hidden = false;
+  const digi = $('#digi', root);
+  const toggleDigi = $('#toggleDigi', root);
+
+  const update = (inst = false) => {
+    T = mod(T, 1440);
+    setHands(svg, T, inst);
+    const hh = Math.floor(T / 60), mm = T % 60;
+    if(hidden) {
+      digi.textContent = "?? : ??";
+    } else {
+      digi.textContent = `${pad(hh)}:${pad(mm)}`;
+    }
+  };
+
+  toggleDigi.onclick = () => {
+    hidden = !hidden;
+    toggleDigi.textContent = hidden ? "Zeit aufdecken" : "Zeit abdecken (Raten)";
+    update();
+  };
+
+  $$('[data-add]', root).forEach(b => {
+    b.onclick = () => {
+      T += parseInt(b.dataset.add, 10);
+      update();
+      sfx.tick();
+    };
+  });
+
+  $('#btnNow', root).onclick = () => {
+    const d = new Date();
+    T = d.getHours() * 60 + d.getMinutes();
+    update(true);
+  };
+
+  // Drag logic for the clock
+  let activeDrag = {};
+  const angleFrom = e => {
+    const r = svg.getBoundingClientRect();
+    return mod(Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI, 360);
+  };
+  svg.addEventListener('pointerdown', e => {
+    const h = e.target.closest('[data-hit]'); if (!h) return;
+    e.preventDefault(); activeDrag[e.pointerId] = h.dataset.hit;
+    try { svg.setPointerCapture(e.pointerId); } catch (_) {}
+    svg.classList.remove('idle'); svg.classList.add('dragging');
+  });
+  svg.addEventListener('pointermove', e => {
+    const active = activeDrag[e.pointerId];
+    if (!active) return;
+    const deg = angleFrom(e); let nT = T;
+    if (active === 'min') {
+      const m = mod(Math.round(deg / 6), 60);
+      let d = m - mod(T, 60);
+      if (d > 30) d -= 60; if (d < -30) d += 60;
+      nT = T + d;
+    } else {
+      const m = mod(T, 60);
+      const targetH12 = mod(Math.round((deg - m * .5) / 30), 12);
+      const currentH12 = Math.floor(mod(T, 720) / 60);
+      let dH = targetH12 - currentH12;
+      if (dH > 6) dH -= 12;
+      if (dH < -6) dH += 12;
+      nT = T + dH * 60;
+    }
+    if (nT !== T) { T = nT; update(); sfx.tick(); }
+  });
+  const end = e => { delete activeDrag[e.pointerId]; if(Object.keys(activeDrag).length===0) svg.classList.remove('dragging'); };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+
+  $('#btnNow', root).click(); 
+  return () => {};
+};
+
+screens.duration = root => {
+  root.innerHTML = header('Wie lange dauert das?') + `
+  <main class="play" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+    <div style="text-align:center; margin-bottom:24px;">
+      <h2 style="font-family:var(--font-h); margin:0 0 6px 0; font-size:clamp(20px, 4vw, 32px);">Wie lange dauert das?</h2>
+      <p style="color:var(--muted); margin:0; font-weight:800;">Stelle eine Start- und eine Endzeit ein, um die Zeitspanne zu berechnen.</p>
+    </div>
+    <div class="dur-wrap">
+      <!-- START CLOCK -->
+      <div class="dur-col">
+        <div style="font-family:var(--font-h); font-size:22px; font-weight:700;">Startzeit</div>
+        <div class="dur-time-box" id="dStart">12:00</div>
+        <div class="clock-wrap" style="width:100%;" id="cwStart"></div>
+      </div>
+
+      <!-- MIDDLE ARROW & RESULT -->
+      <div class="dur-mid">
+        <div class="dur-arrow horiz">➔</div>
+        <div class="dur-arrow vert">➔</div>
+        <div class="dur-box">
+          <div>Dauer</div>
+          <span id="dRes">1 Std 45 Min</span>
+        </div>
+      </div>
+
+      <!-- END CLOCK -->
+      <div class="dur-col">
+        <div style="font-family:var(--font-h); font-size:22px; font-weight:700;">Endzeit</div>
+        <div class="dur-time-box" id="dEnd">13:45</div>
+        <div class="clock-wrap" style="width:100%;" id="cwEnd"></div>
+      </div>
+    </div>
+  </main>`;
+  bindChrome(root);
+
+  const cwStart = $('#cwStart', root);
+  const cwEnd = $('#cwEnd', root);
+  cwStart.innerHTML = clockSVG({ knobs: true, hit: true, T: 0, label: 'Startzeit' });
+  cwEnd.innerHTML = clockSVG({ knobs: true, hit: true, T: 0, label: 'Endzeit' });
+
+  const svgS = $('svg', cwStart);
+  const svgE = $('svg', cwEnd);
+
+  let TS = 12 * 60;
+  let TE = 13 * 60 + 45;
+
+  const elStart = $('#dStart', root);
+  const elEnd = $('#dEnd', root);
+  const elRes = $('#dRes', root);
+
+  const update = (inst = false) => {
+    TS = mod(TS, 1440);
+    TE = mod(TE, 1440);
+    setHands(svgS, TS, inst);
+    setHands(svgE, TE, inst);
+
+    const hs = Math.floor(TS / 60), ms = TS % 60;
+    const he = Math.floor(TE / 60), me = TE % 60;
+
+    elStart.textContent = `${pad(hs)}:${pad(ms)}`;
+    elEnd.textContent = `${pad(he)}:${pad(me)}`;
+
+    let diff = TE - TS;
+    if (diff < 0) diff += 1440; // Endzeit ist am nächsten Tag
+
+    const dh = Math.floor(diff / 60);
+    const dm = diff % 60;
+
+    let resStr = "";
+    if (dh > 0) resStr += `${dh} Std `;
+    if (dm > 0 || dh === 0) resStr += `${dm} Min`;
+    elRes.textContent = resStr.trim();
+  };
+
+  // Drag Event Binder für Start- und End-Uhr
+  const bindDrag = (svg, isStart) => {
+    let activeDrag = {};
+    const angleFrom = e => {
+      const r = svg.getBoundingClientRect();
+      return mod(Math.atan2(e.clientX - (r.left + r.width / 2), -(e.clientY - (r.top + r.height / 2))) * 180 / Math.PI, 360);
+    };
+    svg.addEventListener('pointerdown', e => {
+      const h = e.target.closest('[data-hit]'); if (!h) return;
+      e.preventDefault(); activeDrag[e.pointerId] = h.dataset.hit;
+      try { svg.setPointerCapture(e.pointerId); } catch (_) {}
+      svg.classList.remove('idle'); svg.classList.add('dragging');
+    });
+    svg.addEventListener('pointermove', e => {
+      const active = activeDrag[e.pointerId];
+      if (!active) return;
+      const deg = angleFrom(e);
+      let T = isStart ? TS : TE;
+      let nT = T;
+
+      if (active === 'min') {
+        const m = mod(Math.round(deg / 6), 60);
+        let d = m - mod(T, 60);
+        if (d > 30) d -= 60; if (d < -30) d += 60;
+        nT = T + d;
+      } else {
+        const m = mod(T, 60);
+        const targetH12 = mod(Math.round((deg - m * .5) / 30), 12);
+        const currentH12 = Math.floor(mod(T, 720) / 60);
+        let dH = targetH12 - currentH12;
+        if (dH > 6) dH -= 12;
+        if (dH < -6) dH += 12;
+        nT = T + dH * 60;
+      }
+      if (nT !== T) {
+        if (isStart) TS = nT; else TE = nT;
+        update(); sfx.tick();
+      }
+    });
+    const end = e => { delete activeDrag[e.pointerId]; if(Object.keys(activeDrag).length===0) svg.classList.remove('dragging'); };
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+  };
+
+  bindDrag(svgS, true);
+  bindDrag(svgE, false);
+
+  update(true);
   return () => {};
 };
 
