@@ -248,7 +248,7 @@ button{font:inherit}
   --c:var(--blue);--cd:var(--blue-d);
   position:relative;overflow:hidden;text-align:left;border:0;cursor:pointer;color:#fff;
   display:flex;flex-direction:column;gap:6px;justify-content:center;min-height:clamp(120px,18vh,180px);
-  border-radius:30px;padding:clamp(14px,2vw,22px);background:var(--c);
+  border-radius:30px;padding:60px clamp(14px,2vw,22px) 22px;background:var(--c);
   box-shadow:0 8px 0 var(--cd),0 18px 30px rgba(20,30,90,.18);
   transition:transform .12s,box-shadow .12s;
 }
@@ -782,18 +782,18 @@ function go(name) {
 }
 
 const GAMES = [
-  { id: 'types',    icon: '🃏', title: '<p></p>Welche Uhren?', sub: 'Karten aufdecken',   c: 'blue' },
-  { id: 'set',      icon: '⏰', title: '<p></p>Stell die Uhr ein', sub: 'Zeiger ziehen',      c: 'green' },
-  { id: 'read',     icon: '👀', title: '<p></p>Wie spät ist es?',  sub: 'Uhrzeit ablesen',    c: 'purple' },
-  { id: 'math',     icon: '🍰', title: '<p></p>Zeit-Mathe',        sub: 'Zeitspannen',        c: 'pink' },
-  { id: 'day',      icon: '☀️', title: '<p></p>Mein Tag',          sub: 'Tagesablauf',        c: 'yellow' },
-  { id: 'duel',     icon: '⚔️', title: '<p></p>Teamduell',         sub: 'Split-Screen Modus', c: 'coral' },
-  { id: 'memory',   icon: '🧩', title: '<p></p>Uhren-Memory',      sub: 'Finde die Paare',    c: 'orange' },
-  { id: 'timer',    icon: '⏱️', title: '<p></p>Zeitgefühl',        sub: 'Sekunden schätzen',  c: 'pink' },
-  { id: 'set_rush', icon: '🔥', title: '<p></p>Tempo-Runde',       sub: 'Uhren auf Zeit',     c: 'coral' },
-  { id: 'explore',  icon: '🔭', title: '<p></p>Entdecker-Uhr',     sub: 'Freies Drehen',      c: 'blue' },
-  { id: 'smartboard',icon:'🖥️',title:  '<p></p>Board',             sub: 'Gemeinsam üben',     c: 'purple' },
-  { id: 'duration', icon: '📏', title: '<p></p>Wie lange?',        sub: 'Zeitspanne berechnen',c: 'green' }
+  { id: 'types',    icon: '🃏', title: 'Welche Uhren?', sub: 'Karten aufdecken',   c: 'blue' },
+  { id: 'set',      icon: '⏰', title: 'Stell die Uhr ein', sub: 'Zeiger ziehen',      c: 'green' },
+  { id: 'read',     icon: '👀', title: 'Wie spät ist es?',  sub: 'Uhrzeit ablesen',    c: 'purple' },
+  { id: 'math',     icon: '🍰', title: 'Zeit-Mathe',        sub: 'Zeitspannen',        c: 'pink' },
+  { id: 'day',      icon: '☀️', title: 'Mein Tag',          sub: 'Tagesablauf',        c: 'yellow' },
+  { id: 'duel',     icon: '⚔️', title: 'Teamduell',         sub: 'Split-Screen Modus', c: 'coral' },
+  { id: 'memory',   icon: '🧩', title: 'Uhren-Memory',      sub: 'Finde die Paare',    c: 'orange' },
+  { id: 'timer',    icon: '⏱️', title: 'Zeitgefühl',        sub: 'Sekunden schätzen',  c: 'pink' },
+  { id: 'set_rush', icon: '🔥', title: 'Tempo-Runde',       sub: 'Uhren auf Zeit',     c: 'coral' },
+  { id: 'explore',  icon: '🔭', title: 'Entdecker-Uhr',     sub: 'Freies Drehen',      c: 'blue' },
+  { id: 'smartboard',icon:'🖥️',title:  'Board',             sub: 'Gemeinsam üben',     c: 'purple' },
+  { id: 'duration', icon: '📏', title: 'Wie lange?',        sub: 'Zeitspanne berechnen',c: 'green' }
 ];
 
 screens.home = root => {
