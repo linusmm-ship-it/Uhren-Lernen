@@ -256,7 +256,11 @@ button{font:inherit}
 .gcard:hover{transform:translateY(-3px)}
 .gcard:active{transform:translateY(6px);box-shadow:0 2px 0 var(--cd)}
 .gicon{
-  font-size:clamp(22px,4vw,34px);line-height:1;margin-right:6px;vertical-align:middle;display:inline-block;
+  position:absolute;
+  top:14px;
+  right:14px;
+  font-size:clamp(22px,4vw,34px);
+  z-index:2;
 }
 .gtitle{font-family:var(--font-h);font-weight:700;font-size:clamp(18px,2.6vw,26px);line-height:1.15;display:block;}
 .gsub{font-weight:800;opacity:.92;font-size:clamp(12px,1.6vw,15px);display:block;margin-top:2px}
