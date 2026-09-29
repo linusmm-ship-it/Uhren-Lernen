@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Willkommen Zeitdetektive</title>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -418,6 +418,62 @@ button{font:inherit}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }
+
+/* Responsive, touch-friendly refinements. */
+#app{height:var(--vh)}
+.hero,.games{min-width:0}
+.title{font-size:clamp(34px,5.5vw,68px);overflow-wrap:anywhere}
+.gtitle,.gsub{overflow-wrap:anywhere}
+.play{flex-shrink:0;min-height:min-content;padding-block:12px}
+.topbar{flex-wrap:wrap}
+.topbar-right{flex-wrap:wrap;justify-content:flex-end}
+.home{padding-block:16px;align-content:start}
+.games{grid-template-columns:repeat(2,minmax(0,1fr))}
+.gcard{min-height:148px;padding-top:56px}
+.modal-card{width:min(100%,480px);max-height:90dvh;overflow:auto;padding:clamp(18px,4vw,32px)}
+.modal-card h2{font-size:clamp(26px,6vw,40px);overflow-wrap:anywhere}
+.icon-btn.sm{width:44px;height:44px}
+.chip{min-height:44px}
+.team-board{align-items:center;gap:clamp(12px,2vw,28px)}
+.team-panel{min-width:0;align-self:stretch;justify-content:center}
+.team-name{font-family:var(--font-h);font-size:clamp(19px,3vw,26px);margin:0}
+.team-status{min-height:3em;font-weight:800;text-align:center;width:100%;font-size:clamp(14px,2vw,18px)}
+.team-panel.cooling{background:var(--surface-2);border-radius:24px}
+.team-stage{position:relative}
+.team-stage .clock-wrap::after{content:'';position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.duel-info{text-align:center;font-weight:800;color:var(--muted);margin:8px 0}
+.team-panel .answers{margin-top:0}
+.screen.explore .task{background:var(--surface)!important}
+.screen.explore > .topbar{z-index:20}
+.screen.explore .topbar-title{background:var(--surface);border-radius:18px;padding:8px 12px}
+@media(min-width:1100px){.home{max-width:1480px}.games{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){
+ .topbar-title{order:3;flex-basis:100%;margin-top:8px}
+ .topbar-right{gap:5px}.topbar .pill{font-size:14px;padding:.4em .65em}
+ .team-board{display:grid;grid-template-columns:1fr 1fr;align-content:start}
+ .team-stage{grid-column:1/-1;grid-row:1}
+ .team-stage .clock-wrap{--cs:clamp(180px,52vw,280px)}
+ .team-panel{gap:10px;align-items:center!important;padding:10px 5px}
+ .team-score{font-size:40px;padding:8px 24px}
+ .team-panel .ans-btn{font-size:clamp(22px,6vw,34px);min-height:52px}
+ .team-panel .answers{align-items:center!important}
+}
+@media(max-width:380px){.gcard{border-radius:22px;padding-inline:12px}.gtitle{font-size:18px}.topbar-right .icon-btn{width:40px;height:40px}}
+
+/* Center each complete game in the space below its toolbar.
+   Auto margins become zero when content needs scrolling. */
+.screen > main{flex:0 0 auto!important;margin-block:auto!important}
+.screen > .play{width:100%;align-content:center;grid-template-rows:auto}
+.screen > .home{align-content:center}
+.play:has(#rushStart:not([hidden])){display:flex;align-items:center;justify-content:center}
+.play:has(#duelStart:not([hidden])){align-items:center;justify-content:center}
+@media (min-width:860px) and (min-aspect-ratio:5/4){
+  .screen > .play:not([style*="display:flex"]){grid-template-rows:auto auto}
+}
+@media (max-width:859px), (max-aspect-ratio:5/4){
+  .play,.play.read{--cs:clamp(210px,34vh,340px)}
+}
+
 </style>
 </head>
 <body>
@@ -426,6 +482,14 @@ button{font:inherit}
 <script>
 (() => {
 'use strict';
+// Delayed work belongs to the current screen and must never leak into another game.
+const screenTimeouts = new Set();
+const setTimeout = (fn, ms) => {
+  const id = window.setTimeout(() => { screenTimeouts.delete(id); fn(); }, ms);
+  screenTimeouts.add(id); return id;
+};
+const clearTimeout = id => { screenTimeouts.delete(id); window.clearTimeout(id); };
+
 
 const $  = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -448,6 +512,12 @@ const state = {
   theme: store.get('uhr:theme', null),
   show24: store.get('uhr:show24', false) // Innerer 24h Kreis
 };
+
+state.stars = Number.isSafeInteger(state.stars) && state.stars >= 0 ? state.stars : 0;
+state.level = Number.isInteger(state.level) && state.level >= 1 && state.level <= 5 ? state.level : 2;
+state.theme = ['light', 'dark'].includes(state.theme) ? state.theme : null;
+state.muted = state.muted === true;
+state.show24 = state.show24 === true;
 
 const is24 = () => true; // Fest auf 24h eingestellt!
 
@@ -524,13 +594,29 @@ function toast(html) {
   clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2800);
 }
 function modal(html, actions) {
+  const previousFocus = document.activeElement;
   const el = document.createElement('div');
   el.className = 'modal';
-  el.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true">${html}</div>`;
+  el.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dialog-title">${html}</div>`;
+  const title = $('h2', el); if (title) title.id = 'dialog-title';
   document.body.appendChild(el);
+  app.inert = true;
+  const buttons = $$('button', el);
+  (buttons.find(b => b.dataset.m === 'no') || buttons[0])?.focus();
+  const close = action => {
+    el.remove(); app.inert = false;
+    if (previousFocus?.isConnected) previousFocus.focus();
+    actions[action]?.();
+  };
   el.addEventListener('click', e => {
-    const b = e.target.closest('[data-m]'); if (!b) return;
-    el.remove(); if (actions[b.dataset.m]) actions[b.dataset.m]();
+    const b = e.target.closest('[data-m]'); if (b) close(b.dataset.m);
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && buttons.some(b => b.dataset.m === 'no')) { e.preventDefault(); close('no'); }
+    if (e.key !== 'Tab' || !buttons.length) return;
+    const first = buttons[0], last = buttons[buttons.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
   return el;
 }
@@ -715,12 +801,12 @@ function setHands(svg, T, instant) {
 function setGhost(svg, T) { rot(svg, 'ghost-hour', T * .5); rot(svg, 'ghost-min', T * 6); }
 const unwrap = (prev, target) => prev + (mod(target - prev + 180, 360) - 180);
 
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(err => {});
-  } else {
-    document.exitFullscreen();
-  }
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+    else toast('Vollbild ist in diesem Browser nicht verfügbar.');
+  } catch (_) { toast('Vollbild konnte nicht gestartet werden.'); }
 }
 
 function header(title, extraBtn = '') {
@@ -758,6 +844,7 @@ function bindHelp24(root) {
   const upd = () => {
     $$('.clock').forEach(c => c.classList.toggle('show24', state.show24));
     btn.classList.toggle('on', state.show24);
+    btn.setAttribute('aria-pressed', String(state.show24));
   };
   upd();
   btn.onclick = () => { state.show24 = !state.show24; store.set('uhr:show24', state.show24); upd(); };
@@ -773,12 +860,17 @@ const app = $('#app');
 const screens = {};
 let cleanup = null;
 function go(name) {
+  screenTimeouts.forEach(id => window.clearTimeout(id)); screenTimeouts.clear();
+  app.inert = false;
+  if (toastEl) toastEl.classList.remove('show');
+  parts = []; if (raf) cancelAnimationFrame(raf); raf = 0; cx.clearRect(0, 0, W, H);
   if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
   $$('.modal').forEach(m => m.remove());
   const s = document.createElement('section');
   s.className = 'screen';
   app.replaceChildren(s);
   cleanup = screens[name](s) || null;
+  const heading = $('h1', s); if (heading) { heading.tabIndex = -1; heading.focus({preventScroll:true}); }
 }
 
 const GAMES = [
@@ -960,6 +1052,7 @@ screens.set = root => {
   };
 
   function newTask() {
+    timers.forEach(clearTimeout); timers.length = 0; activeDrag = {};
     target = randTime(lvl(), [prev, { h: 6, m: 0 }, { h: 18, m: 0 }]); prev = target;
     attempts = 0; hinted = false; locked = false; doneBtn.disabled = false;
     stage.classList.remove('ok'); svg.classList.remove('show-ghost'); svg.classList.add('idle');
@@ -1136,9 +1229,11 @@ screens.set_rush = root => {
 
   const COL = ['btn-blue', 'btn-purple', 'btn-pink', 'btn-green'];
   let target = null, prev = null, score = 0, timeTotal = 60;
-  let gameEnd = 0, timerIv = null, locked = false, opts = [];
+  let gameEnd = 0, timerIv = null, locked = false, opts = [], nextTask = null, running = false;
   
   function newTask() {
+    clearTimeout(nextTask);
+    if (!running || performance.now() >= gameEnd) return;
     target = randTime(lvl(), [prev]); prev = target;
     locked = false;
     stage.classList.remove('ok');
@@ -1158,14 +1253,15 @@ screens.set_rush = root => {
     stage.hidden = false;
     actionsScreen.hidden = false;
     score = 0; $('#score', root).textContent = 0;
-    gameEnd = Date.now() + (timeTotal * 1000);
+    running = true;
+    gameEnd = performance.now() + (timeTotal * 1000);
     
     timerIv = setInterval(updateTimer, 50);
-    newTask();
+    newTask(); updateTimer();
   });
 
   function updateTimer() {
-    const left = Math.max(0, gameEnd - Date.now());
+    const left = Math.max(0, gameEnd - performance.now());
     $('#timeLeft', root).textContent = Math.ceil(left/1000) + 's';
     $('#timeBar', root).style.width = (left / (timeTotal*1000) * 100) + '%';
     
@@ -1173,6 +1269,8 @@ screens.set_rush = root => {
   }
 
   function endGame() {
+    if (!running) return;
+    running = false; clearTimeout(nextTask);
     locked = true;
     const earned = Math.floor(score / 3); // 1 Stern pro 3 richtige Antworten
     if(earned > 0) addStars(earned);
@@ -1193,20 +1291,21 @@ screens.set_rush = root => {
 
   ans.addEventListener('click', e => {
     const b = e.target.closest('.ans-btn'); if (!b || locked || b.disabled) return;
+    if (!running || performance.now() >= gameEnd) { updateTimer(); return; }
     const o = opts[+b.dataset.i];
     if (o.h === target.h && o.m === target.m) {
       locked = true; sfx.ok(); stage.classList.add('ok');
       $$('.ans-btn', ans).forEach(x => { if (x !== b) x.disabled = true; });
       b.classList.add('right');
       score++; $('#score', root).textContent = score;
-      setTimeout(newTask, 400); 
+      nextTask = setTimeout(newTask, 400); 
     } else {
       sfx.no(); b.classList.add('wrong'); b.disabled = true;
     }
   });
 
   bindLevels(root, () => { if(!startScreen.hidden) return; newTask(); });
-  return () => { clearInterval(timerIv); };
+  return () => { clearInterval(timerIv); clearTimeout(nextTask); };
 };
 
 screens.math = root => {
@@ -1280,18 +1379,19 @@ screens.math = root => {
 
 screens.day = root => {
   root.innerHTML = `<div class="sky" id="sky" aria-hidden="true"></div>` + header('Mein Tag') + `
-  <main class="play read" style="position:relative; z-index:10">
+  <main class="play read" style="position:relative">
     <div class="stage" id="stage"><div class="clock-wrap" id="cw" style="background:var(--face)"></div></div>
-    <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); position:relative; top:clamp(90px, 25vh, 240px)">
+    <div class="card task" style="background:rgba(255,255,255,0.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px); position:relative">
       <div class="task-label">Was passiert meistens um diese Zeit?</div>
       <div class="task-time" id="tt" style="font-size:clamp(32px,6vw,54px);margin:8px 0"></div>
       <div class="answers" id="ans" style="grid-template-columns:minmax(0,1fr);gap:8px"></div>
       <div class="task-meta">🔥 Serie: <b id="streak">0</b></div>
     </div>
-    <div class="actions" style="position:relative; top:clamp(90px, 25vh, 240px)">
+    <div class="actions" style="position:relative">
       <div class="feedback" id="fb" aria-live="polite"></div>
     </div>
   </main>`;
+  root.classList.add('explore');
   bindChrome(root);
 
   const EVENTS = [
@@ -1324,7 +1424,7 @@ screens.day = root => {
     curT = { h: hh, m: mm };
 
     locked = false;
-    let wrongEvents = shuffle(EVENTS.filter(e => e !== targetEvent)).slice(0, 2);
+    let wrongEvents = shuffle(EVENTS.filter(e => e !== targetEvent && !e.h.includes(hh))).slice(0, 2);
     opts = shuffle([targetEvent, ...wrongEvents]);
 
     $('#tt', root).textContent = digital(curT) + ' Uhr';
@@ -1357,12 +1457,12 @@ screens.day = root => {
 };
 
 screens.duel = root => {
-  root.innerHTML = header('Teamduell') + `
+  root.innerHTML = header('Teamduell') + levelChips() + `
   <main class="play" style="display:flex">
     <!-- START SCREEN -->
     <div class="card task" id="duelStart" style="margin:auto">
       <div class="task-label">Wie viele Punkte zum Sieg?</div>
-      <div style="margin:20px 0; font-size:40px; line-height:1">⚔️</div>
+      <div style="margin:20px 0; font-size:40px; line-height:1">⚔️</div><p class="duel-info">Erst schauen, dann tippen!<br>1. Fehler: 3 Sekunden Pause.<br>Ab dem 2. Fehler: 5 Sekunden Pause.<br>Das gilt für jedes Team pro Uhrzeit.</p>
       <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
         <button class="btn btn-coral js-duel-start" data-t="5">5 Punkte</button>
         <button class="btn btn-coral js-duel-start" data-t="10">10 Punkte</button>
@@ -1372,14 +1472,14 @@ screens.duel = root => {
     <!-- GAME SCREEN -->
     <div class="team-board" id="duelTask" hidden>
       <div class="team-panel team-red" style="align-items:flex-start">
-        <div class="team-score" id="scoreRed">0</div>
+        <h2 class="team-name">Team Rot</h2><div class="team-score" aria-label="Punkte Team Rot" id="scoreRed">0</div><div class="team-status" id="statusRed" role="status"></div>
         <div class="answers" id="ansRed" style="display:flex;flex-direction:column;gap:12px;width:100%"></div>
       </div>
       <div class="team-stage" id="teamStage">
          <div class="clock-wrap" id="cw"></div>
       </div>
       <div class="team-panel team-blue" style="align-items:flex-end">
-        <div class="team-score" id="scoreBlue">0</div>
+        <h2 class="team-name">Team Blau</h2><div class="team-score" aria-label="Punkte Team Blau" id="scoreBlue">0</div><div class="team-status" id="statusBlue" role="status"></div>
         <div class="answers" id="ansBlue" style="display:flex;flex-direction:column;gap:12px;width:100%;align-items:flex-end"></div>
       </div>
     </div>
@@ -1391,10 +1491,30 @@ screens.duel = root => {
   
   let target = null, winScore = 5, scoreRed = 0, scoreBlue = 0, lockedRed = false, lockedBlue = false, lockedGlobal = true;
   let optsRed = [], optsBlue = [];
-  let duelTimer = null;
+  let duelTimer = null, round = 0;
+  const teams = {
+    red: { answers: ansRed, status: $('#statusRed', root), mistakes: 0, until: 0 },
+    blue: { answers: ansBlue, status: $('#statusBlue', root), mistakes: 0, until: 0 }
+  };
+  function refreshLocks() {
+    const now = performance.now();
+    for (const team of Object.values(teams)) {
+      const waiting = team.until > now;
+      team.answers.closest('.team-panel').classList.toggle('cooling', waiting && !lockedGlobal);
+      $$('.ans-btn', team.answers).forEach(b => b.disabled = lockedGlobal || waiting);
+      const text = lockedGlobal ? 'Neue Runde gleich …' : waiting
+        ? `Denkpause: ${Math.ceil((team.until - now) / 1000)} s · ${team.mistakes}. Fehler`
+        : 'Bereit – lies die Uhr!';
+      if (team.status.textContent !== text) team.status.textContent = text;
+    }
+  }
+  const lockTicker = setInterval(refreshLocks, 100);
   
   function startCountdown() {
-    lockedGlobal = true;
+    lockedGlobal = true; round++;
+    clearInterval(duelTimer);
+    for (const team of Object.values(teams)) { team.until = 0; team.mistakes = 0; }
+    refreshLocks();
     stage.classList.remove('pulse-red', 'pulse-blue');
     ansRed.innerHTML = '';
     ansBlue.innerHTML = '';
@@ -1418,7 +1538,7 @@ screens.duel = root => {
   }
 
   function newTask() {
-    target = randTime(lvl());
+    target = randTime(lvl(), [target]);
     lockedRed = false; lockedBlue = false; lockedGlobal = false;
     stage.classList.remove('pulse-red', 'pulse-blue');
     
@@ -1433,6 +1553,7 @@ screens.duel = root => {
     ansBlue.innerHTML = optsBlue.map((o, i) => `<button class="btn ans-btn btn-blue" data-i="${i}">${digital(o)}</button>`).join('');
     
     cw.innerHTML = clockSVG({ label: 'Uhr ablesen', T: (target.h % 12)*60 + target.m, hit: false });
+    refreshLocks();
   }
 
   $$('.js-duel-start', root).forEach(btn => btn.onclick = () => {
@@ -1443,6 +1564,7 @@ screens.duel = root => {
     $('#scoreRed', root).textContent = 0;
     $('#scoreBlue', root).textContent = 0;
     startCountdown();
+    $$('[data-level]', root).forEach(b => b.disabled = true);
   });
 
   function endGame(winnerName, winnerColor) {
@@ -1455,39 +1577,36 @@ screens.duel = root => {
         <button class="btn btn-ghost" data-m="home">Beenden</button>
       </div>`,
       {
-        again: () => { startScreen.hidden = false; taskScreen.hidden = true; },
+        again: () => { startScreen.hidden = false; taskScreen.hidden = true; $$('[data-level]', root).forEach(b => b.disabled = false); },
         home: () => go('home')
       }
     );
   }
 
   function handleGuess(team, b, o) {
-    if (lockedGlobal) return;
+    const own = teams[team];
+    if (lockedGlobal || b.disabled || performance.now() < own.until || !o) return;
     const isRed = team === 'red';
-    if (isRed && lockedRed) return;
-    if (!isRed && lockedBlue) return;
-    
     if (o.h === target.h && o.m === target.m) {
-      lockedGlobal = true; sfx.ok(); 
+      lockedGlobal = true; sfx.ok();
       stage.classList.add(isRed ? 'pulse-red' : 'pulse-blue');
       b.classList.add('right');
-      
       if (isRed) { scoreRed++; $('#scoreRed', root).textContent = scoreRed; }
       else { scoreBlue++; $('#scoreBlue', root).textContent = scoreBlue; }
-      
-      if (scoreRed >= winScore) setTimeout(() => endGame('Rot', 'coral'), 600);
-      else if (scoreBlue >= winScore) setTimeout(() => endGame('Blau', 'blue'), 600);
-      else setTimeout(startCountdown, 1200);
-      
+      refreshLocks();
+      own.status.textContent = 'Richtig! +1 Punkt';
+      const currentRound = round;
+      setTimeout(() => {
+        if (currentRound !== round) return;
+        if (scoreRed >= winScore) endGame('Rot', 'coral');
+        else if (scoreBlue >= winScore) endGame('Blau', 'blue');
+        else startCountdown();
+      }, 1200);
     } else {
-      sfx.no(); b.classList.add('wrong'); b.disabled = true;
-      if (isRed) {
-        lockedRed = true;
-        setTimeout(() => { if(!lockedGlobal) lockedRed = false; b.classList.remove('wrong'); b.disabled = false; }, 1500);
-      } else {
-        lockedBlue = true;
-        setTimeout(() => { if(!lockedGlobal) lockedBlue = false; b.classList.remove('wrong'); b.disabled = false; }, 1500);
-      }
+      own.mistakes++;
+      own.until = performance.now() + (own.mistakes === 1 ? 3000 : 5000);
+      sfx.no(); b.classList.add('wrong');
+      refreshLocks();
     }
   }
 
@@ -1500,7 +1619,8 @@ screens.duel = root => {
     handleGuess('blue', b, optsBlue[+b.dataset.i]);
   });
   
-  return () => { clearInterval(duelTimer); };
+  bindLevels(root);
+  return () => { round++; clearInterval(duelTimer); clearInterval(lockTicker); };
 };
 
 screens.memory = root => {
@@ -1518,6 +1638,7 @@ screens.memory = root => {
   let hideTimer = null;
 
   function deal() {
+    timers.forEach(clearTimeout); timers.length = 0;
     moves = 0; pairs = 0; open = []; lock = false; clearTimeout(hideTimer);
     $('#mv', root).textContent = 0; $('#pr', root).textContent = 0;
     
@@ -1586,7 +1707,7 @@ screens.timer = root => {
         <button class="btn btn-ghost ans-btn js-preset" data-s="20">20s</button>
       </div>
       <div style="margin:16px 0 8px; display:flex; gap:12px; align-items:center; justify-content:center; padding:0 10px;">
-        <input type="range" id="timeSlider" min="1" max="60" value="10" style="flex:1; max-width:260px; accent-color:var(--blue);">
+        <input type="range" id="timeSlider" aria-label="Zielzeit in Sekunden" min="1" max="60" value="10" style="flex:1; max-width:260px; accent-color:var(--blue);">
         <span id="sliderVal" style="font-weight:800; font-family:var(--font-h); font-size:22px; width:45px; text-align:right; color:var(--blue)">10s</span>
       </div>
     </div>
@@ -1630,7 +1751,7 @@ screens.timer = root => {
   actionBtn.onclick = () => {
     if (!running) {
       running = true;
-      startTime = Date.now();
+      startTime = performance.now();
       slider.disabled = true;
       $$('.js-preset', root).forEach(b => b.disabled = true);
       
@@ -1641,7 +1762,7 @@ screens.timer = root => {
       
     } else {
       running = false;
-      const elapsed = (Date.now() - startTime) / 1000;
+      const elapsed = (performance.now() - startTime) / 1000;
       const diff = Math.abs(elapsed - targetSec);
       
       slider.disabled = false;
@@ -1921,7 +2042,7 @@ screens.duration = root => {
       <!-- END CLOCK -->
       <div class="dur-col">
         <div style="font-family:var(--font-h); font-size:22px; font-weight:700;">Endzeit</div>
-        <div class="dur-time-box" id="dEnd">13:45</div>
+        <div class="dur-time-box" aria-live="polite" id="dEnd">13:45</div>
         <div class="clock-wrap" style="width:100%;" id="cwEnd"></div>
       </div>
     </div>
@@ -1965,6 +2086,7 @@ screens.duration = root => {
     if (dh > 0) resStr += `${dh} Std `;
     if (dm > 0 || dh === 0) resStr += `${dm} Min`;
     elRes.textContent = resStr.trim();
+    elEnd.textContent += TE < TS ? " (+1 Tag)" : "";
   };
 
   // Drag Event Binder für Start- und End-Uhr
